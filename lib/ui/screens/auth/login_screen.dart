@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../data/models/models.dart';
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         color: AppTheme.primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(Icons.home_work_rounded, size: 40, color: AppTheme.primaryColor),
+                      child: Icon(Icons.home_work_rounded, size: 40, color: AppTheme.primaryColor),
                     ),
                     const SizedBox(height: 32),
                     const Text(

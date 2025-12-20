@@ -80,11 +80,11 @@ class AppTheme {
         labelStyle: const TextStyle(color: Color(0xFF64748B)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       ),
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.all(Radius.circular(24)),
+          side: BorderSide(color: Color(0xFFE2E8F0)),
         ),
         color: surfaceColor,
       ),

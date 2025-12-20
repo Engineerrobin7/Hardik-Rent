@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 import '../owner/flat_list_screen.dart';
 import '../owner/tenant_list_screen.dart';
 import 'payment_approval_screen.dart';
@@ -108,10 +108,10 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
                                   shape: BoxShape.circle,
                                   border: Border.all(color: AppTheme.primaryColor, width: 2),
                                 ),
-                                child: const CircleAvatar(
+                                child: CircleAvatar(
                                   radius: 24,
                                   backgroundColor: AppTheme.primaryColor,
-                                  child: Icon(Icons.person, color: Colors.white),
+                                  child: const Icon(Icons.person, color: Colors.white),
                                 ),
                               ),
                             ),
@@ -357,7 +357,7 @@ class _InteractiveActionTileState extends State<_InteractiveActionTile> {
       onTap: widget.onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.bottom(12),
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: _isHovered ? AppTheme.primaryColor.withOpacity(0.05) : Colors.white,

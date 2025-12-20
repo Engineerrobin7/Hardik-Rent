@@ -104,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.home_work_rounded,
                         size: 80,
                         color: AppTheme.primaryColor,

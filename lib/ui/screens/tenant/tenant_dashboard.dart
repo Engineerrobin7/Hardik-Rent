@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 import 'payment_submission_screen.dart';
 import '../shared/profile_screen.dart';
 
@@ -82,10 +82,10 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
                           tag: 'profile_pic',
                           child: InkWell(
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen())),
-                            child: const CircleAvatar(
+                            child: CircleAvatar(
                               radius: 26,
                               backgroundColor: AppTheme.secondaryColor,
-                              child: Icon(Icons.person, color: Colors.white),
+                              child: const Icon(Icons.person, color: Colors.white),
                             ),
                           ),
                         ),
@@ -223,7 +223,7 @@ class _HistoryTile extends StatelessWidget {
     bool isPaid = record.status == RentStatus.paid;
 
     return Container(
-      margin: const EdgeInsets.bottom(16),
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 import 'add_edit_flat_screen.dart';
 
 class FlatListScreen extends StatelessWidget {
@@ -66,7 +66,7 @@ class _FlatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.bottom(20),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -116,7 +116,7 @@ class _FlatCard extends StatelessWidget {
                 children: [
                   _infoItem(Icons.layers_rounded, 'Floor ${flat.floor}'),
                   _infoItem(Icons.payments_rounded, '₹${flat.monthlyRent.toInt()}'),
-                  const Icon(Icons.arrow_forward_rounded, size: 20, color: AppTheme.primaryColor),
+                  Icon(Icons.arrow_forward_rounded, size: 20, color: AppTheme.primaryColor),
                 ],
               ),
             ],

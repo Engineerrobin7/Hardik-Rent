@@ -34,7 +34,7 @@ class TenantListScreen extends StatelessWidget {
                 final flat = app.flats.firstWhere((f) => f.currentTenantId == tenant.id, orElse: () => Flat(id: '', apartmentId: '', flatNumber: 'N/A', floor: 0, monthlyRent: 0));
 
                 return Card(
-                  margin: const EdgeInsets.bottom(12),
+                  margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.indigo.withOpacity(0.1),
