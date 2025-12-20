@@ -18,15 +18,21 @@ class AuthProvider with ChangeNotifier {
   Future<void> _loadSession() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('jwt_token');
-    // In a real app, we would verify the token and fetch user details
+    
     if (_token != null) {
-      // Mock session restoration
-      _currentUser = User(
-        id: 'owner_1',
-        name: 'Hardik Landlord',
-        email: 'owner@example.com',
-        role: UserRole.owner,
-      );
+      final roleString = prefs.getString('user_role');
+      final userId = prefs.getString('user_id');
+      final userName = prefs.getString('user_name');
+      final userEmail = prefs.getString('user_email');
+
+      if (userId != null && roleString != null) {
+        _currentUser = User(
+          id: userId,
+          name: userName ?? 'User',
+          email: userEmail ?? '',
+          role: roleString == 'owner' ? UserRole.owner : UserRole.tenant,
+        );
+      }
     }
     notifyListeners();
   }
@@ -62,6 +68,10 @@ class AuthProvider with ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('jwt_token', _token!);
+    await prefs.setString('user_id', _currentUser!.id);
+    await prefs.setString('user_name', _currentUser!.name);
+    await prefs.setString('user_email', _currentUser!.email);
+    await prefs.setString('user_role', _currentUser!.role == UserRole.owner ? 'owner' : 'tenant');
     
     _isLoading = false;
     notifyListeners();
@@ -73,6 +83,10 @@ class AuthProvider with ChangeNotifier {
     _token = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('jwt_token');
+    await prefs.remove('user_id');
+    await prefs.remove('user_name');
+    await prefs.remove('user_email');
+    await prefs.remove('user_role');
     notifyListeners();
   }
 
