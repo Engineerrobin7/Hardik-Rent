@@ -50,7 +50,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
     double totalCollection = 0;
     for (var r in app.rentRecords) {
       if (r.status == RentStatus.paid) {
-        totalCollection += r.amount;
+        totalCollection += r.amountPaid;
       }
     }
 

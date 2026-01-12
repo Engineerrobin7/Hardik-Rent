@@ -43,7 +43,7 @@ class RentRecordsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('₹${record.amount.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text('₹${record.totalDue.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
                         Text(
                           record.status.toString().split('.').last.toUpperCase(),

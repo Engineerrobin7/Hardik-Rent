@@ -5,8 +5,10 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
 import '../../theme/app_theme.dart';
+import 'flat_availability_screen.dart';
 import 'payment_submission_screen.dart';
 import '../shared/profile_screen.dart';
+import 'visual_booking_screen.dart';
 
 class TenantDashboard extends StatefulWidget {
   const TenantDashboard({super.key});
@@ -42,7 +44,17 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
 
     final pendingRent = tenantRentRecords.firstWhere(
       (r) => r.status == RentStatus.pending || r.status == RentStatus.overdue,
-      orElse: () => RentRecord(id: '', flatId: '', tenantId: '', month: '', amount: 0, dueDate: DateTime.now()),
+      orElse: () => RentRecord(
+        id: '', 
+        flatId: '', 
+        tenantId: '', 
+        month: '', 
+        baseRent: 0, 
+        dueDate: DateTime.now(),
+        generatedDate: DateTime.now(),
+        status: RentStatus.pending,
+        flag: RentFlag.green,
+      ),
     );
 
     return Scaffold(
@@ -93,6 +105,8 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
                     ),
                     const SizedBox(height: 32),
                     _buildPremiumRentCard(context, pendingRent),
+                    const SizedBox(height: 24),
+                    _buildFlatAvailabilityCard(context),
                     const SizedBox(height: 40),
                     const Text('Rent History', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 16),
@@ -177,7 +191,7 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
           const SizedBox(height: 24),
           const Text('CURRENT DUE', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
           Text(
-            '₹${rent.amount.toInt()}',
+            '₹${rent.totalDue.toInt()}',
             style: const TextStyle(color: Colors.white, fontSize: 44, fontWeight: FontWeight.w900, letterSpacing: -1),
           ),
           const SizedBox(height: 32),
@@ -210,6 +224,70 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFlatAvailabilityCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 5))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Check Flat Availability', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          Text('Explore available flats in different buildings.', style: TextStyle(color: Colors.grey.shade600)),
+          const SizedBox(height: 20),
+          const SizedBox(height: 20),
+          _buildBuildingTile(context, 'Sunrise Apartments', '1'),
+          const Divider(height: 10),
+          _buildBuildingTile(context, 'Greenwood Complex', '2'),
+          const SizedBox(height: 24),
+          
+          // New Visual Booking Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.grid_view_rounded),
+              label: const Text("Book Flat (Visual View)"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[800],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const VisualBookingScreen()),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBuildingTile(BuildContext context, String buildingName, String apartmentId) {
+    return ListTile(
+      leading: const Icon(Icons.apartment_rounded, color: AppTheme.primaryColor),
+      title: Text(buildingName, style: const TextStyle(fontWeight: FontWeight.bold)),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FlatAvailabilityScreen(apartmentId: apartmentId),
+          ),
+        );
+      },
     );
   }
 }
@@ -257,7 +335,7 @@ class _HistoryTile extends StatelessWidget {
             ),
           ),
           Text(
-            '₹${record.amount.toInt()}',
+            '₹${record.totalDue.toInt()}',
             style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
           ),
         ],

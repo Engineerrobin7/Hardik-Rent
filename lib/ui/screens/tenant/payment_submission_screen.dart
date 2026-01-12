@@ -20,7 +20,7 @@ class _PaymentSubmissionScreenState extends State<PaymentSubmissionScreen> {
   @override
   void initState() {
     super.initState();
-    _amountController.text = widget.rent.amount.toInt().toString();
+    _amountController.text = widget.rent.totalDue.toInt().toString();
   }
 
   void _submit() {
