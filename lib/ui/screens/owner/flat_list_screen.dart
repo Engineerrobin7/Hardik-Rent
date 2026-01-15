@@ -44,8 +44,8 @@ class FlatListScreen extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(color: AppTheme.primaryColor.withOpacity(0.05), shape: BoxShape.circle),
-            child: Icon(Icons.domain_disabled_rounded, size: 80, color: AppTheme.primaryColor.withOpacity(0.3)),
+            decoration: BoxDecoration(color: AppTheme.primaryColor.withAlpha(12), shape: BoxShape.circle),
+            child: Icon(Icons.domain_disabled_rounded, size: 80, color: AppTheme.primaryColor.withAlpha(76)),
           ),
           const SizedBox(height: 24),
           const Text('No Flats Found', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -71,7 +71,7 @@ class _FlatCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 5))],
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 10, offset: const Offset(0, 5))],
       ),
       child: InkWell(
         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddEditFlatScreen(flat: flat))),
@@ -94,7 +94,7 @@ class _FlatCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: (flat.isOccupied ? Colors.indigo : Colors.orange).withOpacity(0.1),
+                      color: (flat.isOccupied ? Colors.indigo : Colors.orange).withAlpha(25),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -116,7 +116,7 @@ class _FlatCard extends StatelessWidget {
                 children: [
                   _infoItem(Icons.layers_rounded, 'Floor ${flat.floor}'),
                   _infoItem(Icons.payments_rounded, '₹${flat.monthlyRent.toInt()}'),
-                  Icon(Icons.arrow_forward_rounded, size: 20, color: AppTheme.primaryColor),
+                  const Icon(Icons.arrow_forward_rounded, size: 20, color: AppTheme.primaryColor),
                 ],
               ),
             ],

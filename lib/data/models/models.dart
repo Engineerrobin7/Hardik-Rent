@@ -28,6 +28,32 @@ class Property {
     this.penaltyPerDay = 100.0,
     this.isMeteredElectricity = true,
   });
+
+  factory Property.fromJson(Map<String, dynamic> json) {
+    return Property(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      address: json['address'] ?? '',
+      totalFlats: json['totalFlats'] ?? 0,
+      rentDueDay: json['rentDueDay'] ?? 5,
+      gracePeriodDays: json['gracePeriodDays'] ?? 3,
+      penaltyPerDay: (json['penaltyPerDay'] ?? 100.0).toDouble(),
+      isMeteredElectricity: json['isMeteredElectricity'] ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'address': address,
+      'totalFlats': totalFlats,
+      'rentDueDay': rentDueDay,
+      'gracePeriodDays': gracePeriodDays,
+      'penaltyPerDay': penaltyPerDay,
+      'isMeteredElectricity': isMeteredElectricity,
+    };
+  }
 }
 
 class Apartment {
@@ -42,6 +68,24 @@ class Apartment {
     required this.name,
     required this.address,
   });
+
+  factory Apartment.fromJson(Map<String, dynamic> json) {
+    return Apartment(
+      id: json['id'] ?? '',
+      ownerId: json['ownerId'] ?? '',
+      name: json['name'] ?? '',
+      address: json['address'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'ownerId': ownerId,
+      'name': name,
+      'address': address,
+    };
+  }
 }
 
 class Flat {
@@ -62,6 +106,30 @@ class Flat {
     this.isOccupied = false,
     this.currentTenantId,
   });
+
+  factory Flat.fromJson(Map<String, dynamic> json) {
+    return Flat(
+      id: json['id'] ?? '',
+      apartmentId: json['apartmentId'] ?? '',
+      flatNumber: json['flatNumber'] ?? '',
+      floor: json['floor'] ?? 0,
+      monthlyRent: (json['monthlyRent'] ?? 0.0).toDouble(),
+      isOccupied: json['isOccupied'] ?? false,
+      currentTenantId: json['currentTenantId'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'apartmentId': apartmentId,
+      'flatNumber': flatNumber,
+      'floor': floor,
+      'monthlyRent': monthlyRent,
+      'isOccupied': isOccupied,
+      'currentTenantId': currentTenantId,
+    };
+  }
 }
 
 class User {
@@ -88,6 +156,36 @@ class User {
     this.agreementUrl,
     this.joinedDate,
   });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      role: UserRole.values.firstWhere((e) => e.toString() == 'UserRole.${json['role']}', orElse: () => UserRole.tenant),
+      phoneNumber: json['phoneNumber'],
+      emergencyContact: json['emergencyContact'],
+      securityDeposit: (json['securityDeposit'] ?? 0.0).toDouble(),
+      idProofUrl: json['idProofUrl'],
+      agreementUrl: json['agreementUrl'],
+      joinedDate: json['joinedDate'] != null ? DateTime.parse(json['joinedDate']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'role': role.toString().split('.').last,
+      'phoneNumber': phoneNumber,
+      'emergencyContact': emergencyContact,
+      'securityDeposit': securityDeposit,
+      'idProofUrl': idProofUrl,
+      'agreementUrl': agreementUrl,
+      'joinedDate': joinedDate?.toIso8601String(),
+    };
+  }
 }
 
 class RentRecord {
@@ -122,6 +220,40 @@ class RentRecord {
     required this.flag,
   });
 
+  factory RentRecord.fromJson(Map<String, dynamic> json) {
+    return RentRecord(
+      id: json['id'] ?? '',
+      flatId: json['flatId'] ?? '',
+      tenantId: json['tenantId'] ?? '',
+      month: json['month'] ?? '',
+      generatedDate: DateTime.parse(json['generatedDate']),
+      dueDate: DateTime.parse(json['dueDate']),
+      baseRent: (json['baseRent'] ?? 0.0).toDouble(),
+      electricityCharges: (json['electricityCharges'] ?? 0.0).toDouble(),
+      penaltyApplied: (json['penaltyApplied'] ?? 0.0).toDouble(),
+      amountPaid: (json['amountPaid'] ?? 0.0).toDouble(),
+      status: RentStatus.values.firstWhere((e) => e.toString() == 'RentStatus.${json['status']}', orElse: () => RentStatus.pending),
+      flag: RentFlag.values.firstWhere((e) => e.toString() == 'RentFlag.${json['flag']}', orElse: () => RentFlag.yellow),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'flatId': flatId,
+      'tenantId': tenantId,
+      'month': month,
+      'generatedDate': generatedDate.toIso8601String(),
+      'dueDate': dueDate.toIso8601String(),
+      'baseRent': baseRent,
+      'electricityCharges': electricityCharges,
+      'penaltyApplied': penaltyApplied,
+      'amountPaid': amountPaid,
+      'status': status.toString().split('.').last,
+      'flag': flag.toString().split('.').last,
+    };
+  }
+
   double get totalDue => baseRent + electricityCharges + penaltyApplied;
   double get pendingAmount => totalDue - amountPaid;
 }
@@ -148,4 +280,30 @@ class PaymentRecord {
     this.screenshotUrl,
     this.status = PaymentStatus.pending,
   });
+
+  factory PaymentRecord.fromJson(Map<String, dynamic> json) {
+    return PaymentRecord(
+      id: json['id'] ?? '',
+      rentId: json['rentId'] ?? '',
+      tenantId: json['tenantId'] ?? '',
+      amount: (json['amount'] ?? 0.0).toDouble(),
+      transactionId: json['transactionId'] ?? '',
+      paymentDate: DateTime.parse(json['paymentDate']),
+      screenshotUrl: json['screenshotUrl'],
+      status: PaymentStatus.values.firstWhere((e) => e.toString() == 'PaymentStatus.${json['status']}', orElse: () => PaymentStatus.pending),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'rentId': rentId,
+      'tenantId': tenantId,
+      'amount': amount,
+      'transactionId': transactionId,
+      'paymentDate': paymentDate.toIso8601String(),
+      'screenshotUrl': screenshotUrl,
+      'status': status.toString().split('.').last,
+    };
+  }
 }

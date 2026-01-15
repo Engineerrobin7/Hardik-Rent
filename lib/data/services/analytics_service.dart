@@ -1,6 +1,8 @@
 // Sprint 1: Analytics Service
 // File: lib/data/services/analytics_service.dart
 
+import 'package:flutter/foundation.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/analytics_models.dart';
 
@@ -54,7 +56,7 @@ class AnalyticsService {
 
       return revenueList;
     } catch (e) {
-      print('Error getting monthly revenue: $e');
+      debugPrint('Error getting monthly revenue: $e');
       return [];
     }
   }
@@ -107,7 +109,7 @@ class AnalyticsService {
         }
       }
 
-      final averageCollectionTime = latePayments > 0 ? totalDelay / latePayments : 0;
+      final averageCollectionTime = latePayments > 0 ? totalDelay / latePayments : 0.0;
 
       return PaymentAnalytics(
         totalPayments: totalPayments,
@@ -120,7 +122,7 @@ class AnalyticsService {
         periodEnd: endDate,
       );
     } catch (e) {
-      print('Error getting payment analytics: $e');
+      debugPrint('Error getting payment analytics: $e');
       return PaymentAnalytics(
         totalPayments: 0,
         onTimePayments: 0,
@@ -206,7 +208,7 @@ class AnalyticsService {
         }
 
         if (totalPayments > 0) {
-          final averageDelay = latePayments > 0 ? totalDelay / latePayments : 0;
+          final averageDelay = latePayments > 0 ? totalDelay / latePayments : 0.0;
           final onTimeRate = (onTimePayments / totalPayments) * 100;
 
           String status;
@@ -243,7 +245,7 @@ class AnalyticsService {
 
       return behaviors;
     } catch (e) {
-      print('Error getting tenant behaviors: $e');
+      debugPrint('Error getting tenant behaviors: $e');
       return [];
     }
   }
@@ -330,7 +332,7 @@ class AnalyticsService {
         pendingAmount: pendingAmount,
       );
     } catch (e) {
-      print('Error getting dashboard summary: $e');
+      debugPrint('Error getting dashboard summary: $e');
       return DashboardSummary(
         totalProperties: 0,
         occupiedProperties: 0,

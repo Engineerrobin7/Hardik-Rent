@@ -55,7 +55,7 @@ class _MaintenanceRequestScreenState extends State<MaintenanceRequestScreen> {
     try {
       // 1. Upload images (simulated here)
       List<String> photoUrls = [];
-      for (var image in _selectedImages) {
+      for (var _ in _selectedImages) {
         // In real app: photoUrls.add(await StorageService.uploadFile(File(image.path)));
         // For demo:
         photoUrls.add('https://placeholder.com/image.jpg'); 

@@ -52,7 +52,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 56),
           elevation: 4,
-          shadowColor: primaryColor.withOpacity(0.4),
+          shadowColor: primaryColor.withAlpha(102),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -95,12 +95,12 @@ class AppTheme {
 // Utility class for Glassmorphism effects
 class GlassDecoration {
   static BoxDecoration get decoration => BoxDecoration(
-    color: Colors.white.withOpacity(0.8),
+    color: Colors.white.withAlpha(204),
     borderRadius: BorderRadius.circular(24),
-    border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
+    border: Border.all(color: Colors.white.withAlpha(102), width: 1.5),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.05),
+        color: Colors.black.withAlpha(12),
         blurRadius: 20,
         offset: const Offset(0, 10),
       ),

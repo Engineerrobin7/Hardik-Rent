@@ -75,7 +75,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: AppTheme.primaryGradient.withOpacity(0.1) as Gradient,
+                gradient: LinearGradient(
+                  colors: AppTheme.primaryGradient.colors.map((c) => c.withAlpha(25)).toList(),
+                  begin: AppTheme.primaryGradient.begin,
+                  end: AppTheme.primaryGradient.end,
+                ),
               ),
             ),
           ),
@@ -91,10 +95,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        color: AppTheme.primaryColor.withAlpha(25),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Icon(Icons.home_work_rounded, size: 40, color: AppTheme.primaryColor),
+                      child: const Icon(Icons.home_work_rounded, size: 40, color: AppTheme.primaryColor),
                     ),
                     const SizedBox(height: 32),
                     const Text(
@@ -147,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           onPressed: auth.isLoading ? null : _handleLogin,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryColor,
-                            shadowColor: AppTheme.primaryColor.withOpacity(0.5),
+                            shadowColor: AppTheme.primaryColor.withAlpha(127),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           ),
                           child: auth.isLoading

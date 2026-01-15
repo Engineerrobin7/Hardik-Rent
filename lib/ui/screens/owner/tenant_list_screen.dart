@@ -7,7 +7,6 @@ import 'add_tenant_screen.dart';
 class TenantListScreen extends StatelessWidget {
   const TenantListScreen({super.key});
 
-  @override
   Widget _buildTenantItem(BuildContext context, User tenant, Flat flat, AppProvider app) {
     // Determine flag based on latest rent record
     final rents = app.rentRecords.where((r) => r.tenantId == tenant.id).toList();
@@ -29,7 +28,7 @@ class TenantListScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: flagColor.withOpacity(0.3), width: 1),
+        side: BorderSide(color: flagColor.withAlpha(76), width: 1),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -40,7 +39,7 @@ class TenantListScreen extends StatelessWidget {
             border: Border.all(color: flagColor, width: 2),
           ),
           child: CircleAvatar(
-            backgroundColor: flagColor.withOpacity(0.1),
+            backgroundColor: flagColor.withAlpha(25),
             child: Text(
               tenant.name[0], 
               style: TextStyle(color: flagColor, fontWeight: FontWeight.bold)
@@ -57,7 +56,7 @@ class TenantListScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: flagColor.withOpacity(0.1),
+                color: flagColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(

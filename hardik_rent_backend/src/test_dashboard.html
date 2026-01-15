@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardik Rent API Tester</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --success: #10B981;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-weight: 800;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .response-box {
+            background: #0F172A;
+            color: #38BDF8;
+            padding: 20px;
+            border-radius: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 4px solid #1E293B;
+        }
+        .label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #64748B;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .get { background: #DBEAFE; color: #1E40AF; }
+        .post { background: #DCFCE7; color: #166534; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hardik Rent Live API</h1>
+            <p>Test and verify all backend routes in real-time</p>
+        </div>
+
+        <div class="grid">
+            <!-- Properties -->
+            <div class="card">
+                <span class="tag get">GET</span>
+                <h3>Properties</h3>
+                <p>Fetch all properties from MySQL</p>
+                <button onclick="testRoute('/api/properties')">Fetch Properties</button>
+            </div>
+
+            <!-- Maintenance -->
+            <div class="card">
+                <span class="tag get">GET</span>
+                <h3>Maintenance</h3>
+                <p>View all owner repair tickets</p>
+                <button onclick="testRoute('/api/maintenance/owner')">Review Tickets</button>
+            </div>
+
+            <!-- Analytics -->
+            <div class="card">
+                <span class="tag get">GET</span>
+                <h3>Analytics</h3>
+                <p>Calculate revenue & occupancy</p>
+                <button onclick="testRoute('/api/analytics/summary')">Run Analytics</button>
+            </div>
+
+             <!-- Health -->
+             <div class="card">
+                <span class="tag get">GET</span>
+                <h3>Server Health</h3>
+                <p>Check if Node.js is healthy</p>
+                <button onclick="testRoute('/health')">Heartbeat Check</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <span class="tag post">POST</span>
+            <h3>Create Mock Property</h3>
+            <p>Insert a test property into your MySQL database</p>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="propName" placeholder="Property Name (e.g. Royal Palms)">
+                <input type="text" id="propAddr" placeholder="Address">
+            </div>
+            <button onclick="createMockProperty()">Create Property & Units</button>
+        </div>
+
+        <div class="card">
+            <h3>API Live Response</h3>
+            <div id="response" class="response-box">Click a button above to see the data...</div>
+        </div>
+    </div>
+
+    <script>
+        const responseBox = document.getElementById('response');
+
+        async function testRoute(route) {
+            responseBox.innerText = "Connecting to " + route + "...";
+            try {
+                const res = await fetch(route, {
+                    headers: { 'x-test-mode': 'true' }
+                });
+                const data = await res.json();
+                responseBox.innerText = JSON.stringify(data, null, 2);
+            } catch (err) {
+                responseBox.innerText = "Error: " + err.message;
+            }
+        }
+
+        async function createMockProperty() {
+            const name = document.getElementById('propName').value || "Test Building";
+            const address = document.getElementById('propAddr').value || "123 Mumbai St";
+            
+            responseBox.innerText = "Creating property...";
+            try {
+                const res = await fetch('/api/properties', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-test-mode': 'true' 
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        address: address,
+                        structure: {
+                            floors: [
+                                { units: [{ unit_number: "101" }, { unit_number: "102" }] },
+                                { units: [{ unit_number: "201" }] }
+                            ]
+                        }
+                    })
+                });
+                const data = await res.json();
+                responseBox.innerText = "✅ Success!\n\n" + JSON.stringify(data, null, 2);
+            } catch (err) {
+                responseBox.innerText = "Error: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+  error - The argument type 'num' can't be assigned to the parameter type 'double'.  - lib\data\services\analytics_service.dart:116:32 - argument_type_not_assignable
+  error - The argument type 'num' can't be assigned to the parameter type 'double'.  - lib\data\services\analytics_service.dart:230:27 - argument_type_not_assignable
+  error - The method 'fromJson' isn't defined for the type 'Flat' - lib\services\firebase_service.dart:54:21 - undefined_method
+  error - The method 'toJson' isn't defined for the type 'Flat' - lib\services\firebase_service.dart:60:44 - undefined_method
+  error - The method 'toJson' isn't defined for the type 'Flat' - lib\services\firebase_service.dart:64:60 - undefined_method
+  error - The method 'fromJson' isn't defined for the type 'User' - lib\services\firebase_service.dart:74:21 - undefined_method
+  error - The method 'toJson' isn't defined for the type 'User' - lib\services\firebase_service.dart:83:61 - undefined_method
+  error - The method 'fromJson' isn't defined for the type 'User' - lib\services\firebase_service.dart:89:19 - undefined_method
+  error - The method 'fromJson' isn't defined for the type 'RentRecord' - lib\services\firebase_service.dart:98:27 - undefined_method
+  error - The method 'toJson' isn't defined for the type 'RentRecord' - lib\services\firebase_service.dart:104:53 - undefined_method
+  error - The method 'toJson' isn't defined for the type 'RentRecord' - lib\services\firebase_service.dart:108:72 - undefined_method
+  error - The method 'toJson' isn't defined for the type 'PaymentRecord' - lib\services\firebase_service.dart:113:50 - undefined_method
+  error - The method 'fromJson' isn't defined for the type 'PaymentRecord' - lib\services\firebase_service.dart:119:30 - undefined_method
+  error - The class 'EdgeInsets' doesn't have a constant constructor 'bottom' - lib\ui\screens\tenant\agreement_list_screen.dart:82:32 - const_with_undefined_constructor
+  error - The named parameter 'apartmentId' isn't defined - lib\ui\screens\tenant\tenant_dashboard.dart:287:58 - undefined_named_parameter
+  error - Target of URI doesn't exist: '../../data/models/visual_booking_models.dart' - lib\ui\screens\tenant\visual_booking_screen.dart:5:8 - uri_does_not_exist
+  error - Undefined class 'BuildingStructure' - lib\ui\screens\tenant\visual_booking_screen.dart:16:9 - undefined_class
+  error - Undefined name 'BuildingStructure' - lib\ui\screens\tenant\visual_booking_screen.dart:16:39 - undefined_identifier
+  error - Undefined class 'FlatUnit' - lib\ui\screens\tenant\visual_booking_screen.dart:17:3 - undefined_class
+  error - Undefined name 'FlatStatus' - lib\ui\screens\tenant\visual_booking_screen.dart:38:34 - undefined_identifier
+  error - Undefined name 'FlatStatus' - lib\ui\screens\tenant\visual_booking_screen.dart:39:34 - undefined_identifier
+  error - Undefined name 'FlatStatus' - lib\ui\screens\tenant\visual_booking_screen.dart:40:34 - undefined_identifier
+  error - Undefined class 'FlatStatus' - lib\ui\screens\tenant\visual_booking_screen.dart:76:27 - undefined_class
+  error - Undefined class 'FlatUnit' - lib\ui\screens\tenant\visual_booking_screen.dart:77:5 - undefined_class
+  error - The method 'FlatUnit' isn't defined for the type '_VisualBookingScreenState' - lib\ui\screens\tenant\visual_booking_screen.dart:77:25 - undefined_method
+  error - Undefined class 'Floor' - lib\ui\screens\tenant\visual_booking_screen.dart:97:25 - undefined_class
+  error - Undefined class 'FlatUnit' - lib\ui\screens\tenant\visual_booking_screen.dart:162:25 - undefined_class
+  error - Undefined name 'FlatStatus' - lib\ui\screens\tenant\visual_booking_screen.dart:167:28 - undefined_identifier
+  error - Target of URI doesn't exist: 'package:google_fonts/google_fonts.dart' - lib\ui\theme\app_theme.dart:2:8 - uri_does_not_exist
+  error - Undefined name 'GoogleFonts' - lib\ui\theme\app_theme.dart:37:18 - undefined_identifier
+  error - Undefined name 'GoogleFonts' - lib\ui\theme\app_theme.dart:42:25 - undefined_identifier
+  error - Undefined name 'GoogleFonts' - lib\ui\theme\app_theme.dart:59:22 - undefined_identifier

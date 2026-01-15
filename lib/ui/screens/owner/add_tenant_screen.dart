@@ -67,7 +67,7 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
             ),
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
-              value: _selectedFlatId,
+              initialValue: _selectedFlatId,
               decoration: const InputDecoration(labelText: 'Assign to Flat *'),
               items: availableFlats.map((f) {
                 return DropdownMenuItem(

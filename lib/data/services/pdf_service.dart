@@ -8,10 +8,12 @@ import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:typed_data';
 
 class PdfService {
   /// Generate a rent receipt PDF
-  Future<File> generateRentReceipt({
+  Future<dynamic> generateRentReceipt({
     required String receiptNumber,
     required String tenantName,
     required String tenantPhone,
@@ -360,12 +362,19 @@ class PdfService {
       ),
     );
 
-    // Save PDF to file
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/receipt_$receiptNumber.pdf');
-    await file.writeAsBytes(await pdf.save());
+    // Generate PDF bytes
+    final bytes = await pdf.save();
 
-    return file;
+    if (kIsWeb) {
+      // On web we return the bytes directly
+      return bytes;
+    } else {
+      // On mobile/desktop we save to a file
+      final output = await getTemporaryDirectory();
+      final file = File('${output.path}/receipt_$receiptNumber.pdf');
+      await file.writeAsBytes(bytes);
+      return file;
+    }
   }
 
   pw.Widget _buildPaymentRow(String description, double amount) {
@@ -391,17 +400,23 @@ class PdfService {
   }
 
   /// Share the PDF receipt
-  Future<void> shareReceipt(File pdfFile) async {
-    await Share.shareXFiles(
-      [XFile(pdfFile.path)],
-      subject: 'Rent Receipt',
-      text: 'Please find attached your rent receipt.',
-    );
+  Future<void> shareReceipt(dynamic pdfSource) async {
+    if (kIsWeb) {
+      // On web, sharing a file is different, usually downloading or using printing
+      await Printing.sharePdf(bytes: pdfSource as Uint8List, filename: 'receipt.pdf');
+    } else {
+      final file = pdfSource as File;
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Rent Receipt',
+        text: 'Please find attached your rent receipt.',
+      );
+    }
   }
 
   /// Print the PDF receipt
-  Future<void> printReceipt(File pdfFile) async {
-    final bytes = await pdfFile.readAsBytes();
+  Future<void> printReceipt(dynamic pdfSource) async {
+    final Uint8List bytes = kIsWeb ? (pdfSource as Uint8List) : await (pdfSource as File).readAsBytes();
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => bytes,
     );

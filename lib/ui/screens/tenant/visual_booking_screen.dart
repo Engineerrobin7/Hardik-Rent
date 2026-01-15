@@ -2,7 +2,7 @@
 // File: lib/ui/screens/tenant/visual_booking_screen.dart
 
 import 'package:flutter/material.dart';
-import '../../data/models/visual_booking_models.dart';
+import '../../../data/models/visual_booking_models.dart';
 
 class VisualBookingScreen extends StatefulWidget {
   const VisualBookingScreen({Key? key}) : super(key: key);
@@ -179,7 +179,7 @@ class _VisualBookingScreenState extends State<VisualBookingScreen> {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: flat.statusColor.withOpacity(isSelected ? 1.0 : 0.2),
+          color: isSelected ? flat.statusColor : flat.statusColor.withAlpha(51),
           border: Border.all(
             color: flat.statusColor,
             width: isSelected ? 3 : 2,
@@ -216,7 +216,7 @@ class _VisualBookingScreenState extends State<VisualBookingScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(25),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),

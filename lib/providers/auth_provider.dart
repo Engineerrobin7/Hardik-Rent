@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../data/models/models.dart';
 import '../services/firebase_service.dart';
+import '../services/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final FirebaseService _service = FirebaseService();
+  final ApiService _apiService = ApiService();
   User? _currentUser;
   bool _isLoading = false;
 
@@ -31,6 +33,20 @@ class AuthProvider with ChangeNotifier {
       final authUser = await _service.signIn(email, password);
       if (authUser != null) {
         _currentUser = await _service.getUser(authUser.uid);
+        
+        // Sync with MySQL
+        if (_currentUser != null) {
+          try {
+            await _apiService.syncUserWithBackend(
+              email: _currentUser!.email,
+              name: _currentUser!.name,
+              role: _currentUser!.role.toString().split('.').last,
+            );
+          } catch (e) {
+            debugPrint('Backend Sync Error: $e');
+          }
+        }
+
         _isLoading = false;
         notifyListeners();
         return true;
@@ -67,6 +83,17 @@ class AuthProvider with ChangeNotifier {
         // Save profile to Firestore
         await _service.addTenant(newUser); // This puts it in 'users' collection
         
+        // Sync with MySQL
+        try {
+          await _apiService.syncUserWithBackend(
+            email: newUser.email,
+            name: newUser.name,
+            role: newUser.role.toString().split('.').last,
+          );
+        } catch (e) {
+          debugPrint('Backend Sync Error: $e');
+        }
+
         _currentUser = newUser;
         _isLoading = false;
         notifyListeners();

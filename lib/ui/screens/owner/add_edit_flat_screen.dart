@@ -74,7 +74,7 @@ class _AddEditFlatScreenState extends State<AddEditFlatScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DropdownButtonFormField<String>(
-              value: _selectedApartmentId,
+              initialValue: _selectedApartmentId,
               decoration: const InputDecoration(labelText: 'Select Apartment'),
               items: apartments.map((apt) {
                 return DropdownMenuItem(

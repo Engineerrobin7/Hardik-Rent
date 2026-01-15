@@ -1,7 +1,7 @@
 // Sprint 1: Analytics Models
 // File: lib/data/models/analytics_models.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 /// Revenue data for charts
 class RevenueData {

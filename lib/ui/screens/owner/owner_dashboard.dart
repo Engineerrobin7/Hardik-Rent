@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/app_provider.dart';
-import '../../../data/models/models.dart';
+
+import '../../../services/api_service.dart';
 import '../../theme/app_theme.dart';
 import '../owner/flat_list_screen.dart';
 import '../owner/tenant_list_screen.dart';
@@ -21,15 +22,31 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
+  final ApiService _apiService = ApiService();
+  Map<String, dynamic>? _analyticsData;
+
+
   @override
   void initState() {
     super.initState();
+    _fetchStats();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
     _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+  }
+
+  Future<void> _fetchStats() async {
+    try {
+      final stats = await _apiService.getOwnerAnalytics();
+      setState(() {
+        _analyticsData = stats;
+      });
+    } catch (e) {
+      debugPrint('Error fetching analytics: $e');
+    }
   }
 
   @override
@@ -43,16 +60,13 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
     final auth = Provider.of<AuthProvider>(context);
     final app = Provider.of<AppProvider>(context);
 
-    final totalFlats = app.flats.length;
-    final occupiedFlats = app.flats.where((f) => f.isOccupied).length;
-    final vacantFlats = totalFlats - occupiedFlats;
+    final totalFlats = _analyticsData?['stats']?['totalUnits'] ?? app.flats.length;
+    final occupiedFlats = _analyticsData?['stats']?['occupiedUnits'] ?? app.flats.where((f) => f.isOccupied).length;
+
     
-    double totalCollection = 0;
-    for (var r in app.rentRecords) {
-      if (r.status == RentStatus.paid) {
-        totalCollection += r.amountPaid;
-      }
-    }
+    double totalCollection = (_analyticsData?['totalRevenue'] ?? 0).toDouble();
+    double pendingRent = (_analyticsData?['pendingRent'] ?? 0).toDouble();
+    String occupancyRate = _analyticsData?['occupancyRate']?.toString() ?? "0";
 
     return Scaffold(
       body: Stack(
@@ -66,7 +80,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withAlpha(25),
               ),
             ),
           ),
@@ -146,15 +160,15 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
                           gradient: const [Color(0xFF10B981), Color(0xFF34D399)],
                         ),
                         _StatMiniCard(
-                          title: 'Vacant',
-                          value: vacantFlats.toString(),
-                          icon: Icons.night_shelter_rounded,
-                          gradient: const [Color(0xFFF59E0B), Color(0xFFFBBF24)],
+                          title: 'Occupancy',
+                          value: '$occupancyRate%',
+                          icon: Icons.pie_chart_rounded,
+                          gradient: const [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
                         ),
                         _StatMiniCard(
-                          title: 'Overdue',
-                          value: app.rentRecords.where((r) => r.status == RentStatus.overdue).length.toString(),
-                          icon: Icons.warning_amber_rounded,
+                          title: 'Pending Rent',
+                          value: '₹${pendingRent.toInt()}',
+                          icon: Icons.hourglass_empty_rounded,
                           gradient: const [Color(0xFFEF4444), Color(0xFFF87171)],
                         ),
                       ]),
@@ -218,7 +232,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withOpacity(0.4),
+            color: AppTheme.primaryColor.withAlpha(102),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -263,7 +277,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
               const SizedBox(width: 8),
               Text(
                 '+12% from last month',
-                style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                style: TextStyle(color: Colors.white.withAlpha(204), fontSize: 14),
               ),
             ],
           ),
@@ -296,7 +310,7 @@ class _StatMiniCard extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withAlpha(5),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -360,10 +374,10 @@ class _InteractiveActionTileState extends State<_InteractiveActionTile> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _isHovered ? AppTheme.primaryColor.withOpacity(0.05) : Colors.white,
+          color: _isHovered ? AppTheme.primaryColor.withAlpha(12) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: _isHovered ? AppTheme.primaryColor.withOpacity(0.3) : Colors.grey.shade100,
+            color: _isHovered ? AppTheme.primaryColor.withAlpha(76) : Colors.grey.shade100,
             width: 1.5,
           ),
         ),
@@ -372,7 +386,7 @@ class _InteractiveActionTileState extends State<_InteractiveActionTile> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(widget.icon, color: AppTheme.primaryColor),

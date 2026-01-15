@@ -77,12 +77,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             Positioned(
               top: -50,
               right: -50,
-              child: _CircularDecor(color: Colors.white.withOpacity(0.1), size: 200),
+              child: _CircularDecor(color: Colors.white.withAlpha(25), size: 200),
             ),
             Positioned(
               bottom: -100,
               left: -100,
-              child: _CircularDecor(color: Colors.white.withOpacity(0.1), size: 300),
+              child: _CircularDecor(color: Colors.white.withAlpha(25), size: 300),
             ),
             FadeTransition(
               opacity: _opacityAnimation,
@@ -98,13 +98,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         borderRadius: BorderRadius.circular(32),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withAlpha(25),
                             blurRadius: 40,
                             offset: const Offset(0, 20),
                           ),
                         ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.home_work_rounded,
                         size: 80,
                         color: AppTheme.primaryColor,
@@ -124,7 +124,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     Text(
                       'THE NEW STANDARD IN RENTING',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withAlpha(178),
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 2,

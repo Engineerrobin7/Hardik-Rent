@@ -1,6 +1,8 @@
 // Sprint 2: Chat Service
 // File: lib/data/services/chat_service.dart
 
+import 'package:flutter/foundation.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import '../models/chat_models.dart';
@@ -52,7 +54,7 @@ class ChatService {
 
       return chatRoom;
     } catch (e) {
-      print('Error creating chat room: $e');
+      debugPrint('Error creating chat room: $e');
       rethrow;
     }
   }
@@ -99,7 +101,7 @@ class ChatService {
       // Increment unread count for receiver
       await _incrementUnreadCount(chatRoomId, receiverId);
     } catch (e) {
-      print('Error sending message: $e');
+      debugPrint('Error sending message: $e');
       rethrow;
     }
   }
@@ -153,7 +155,7 @@ class ChatService {
         'unreadCount': 0,
       });
     } catch (e) {
-      print('Error marking messages as read: $e');
+      debugPrint('Error marking messages as read: $e');
     }
   }
 
@@ -175,7 +177,7 @@ class ChatService {
 
       return totalUnread;
     } catch (e) {
-      print('Error getting unread count: $e');
+      debugPrint('Error getting unread count: $e');
       return 0;
     }
   }
@@ -186,7 +188,7 @@ class ChatService {
         'unreadCount': FieldValue.increment(1),
       });
     } catch (e) {
-      print('Error incrementing unread count: $e');
+      debugPrint('Error incrementing unread count: $e');
     }
   }
 
@@ -209,7 +211,7 @@ class ChatService {
       // Delete chat room
       await _firestore.collection('chatRooms').doc(chatRoomId).delete();
     } catch (e) {
-      print('Error deleting chat room: $e');
+      debugPrint('Error deleting chat room: $e');
       rethrow;
     }
   }

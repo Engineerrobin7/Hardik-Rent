@@ -68,7 +68,7 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.secondaryColor.withOpacity(0.05),
+                color: AppTheme.secondaryColor.withAlpha(12),
               ),
             ),
           ),
@@ -140,7 +140,7 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: Colors.grey.shade100),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)],
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 20)],
         ),
         child: Column(
           children: [
@@ -169,7 +169,7 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
         borderRadius: BorderRadius.circular(36),
         boxShadow: [
           BoxShadow(
-            color: (isOverdue ? Colors.red : AppTheme.primaryColor).withOpacity(0.35),
+            color: (isOverdue ? Colors.red : AppTheme.primaryColor).withAlpha(89),
             blurRadius: 25,
             offset: const Offset(0, 15),
           ),
@@ -234,7 +234,7 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
         border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 5))],
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(7), blurRadius: 20, offset: const Offset(0, 5))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +313,7 @@ class _HistoryTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: (isPaid ? Colors.green : Colors.orange).withOpacity(0.1),
+              color: (isPaid ? Colors.green : Colors.orange).withAlpha(25),
               shape: BoxShape.circle,
             ),
             child: Icon(

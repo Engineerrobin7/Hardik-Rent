@@ -1,6 +1,8 @@
 // Sprint 4: Biometric Authentication Service
 // File: lib/data/services/biometric_service.dart
 
+import 'package:flutter/foundation.dart';
+
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter/services.dart';
 
@@ -15,7 +17,7 @@ class BiometricService {
           canAuthenticateWithBiometrics || await auth.isDeviceSupported();
       return canAuthenticate;
     } on PlatformException catch (e) {
-      print('Error checking biometrics: $e');
+      debugPrint('Error checking biometrics: $e');
       return false;
     }
   }
@@ -32,7 +34,7 @@ class BiometricService {
       );
       return authenticated;
     } on PlatformException catch (e) {
-      print('Error authenticating: $e');
+      debugPrint('Error authenticating: $e');
       return false;
     }
   }
@@ -42,7 +44,7 @@ class BiometricService {
     try {
       return await auth.getAvailableBiometrics();
     } on PlatformException catch (e) {
-      print('Error getting biometric types: $e');
+      debugPrint('Error getting biometric types: $e');
       return <BiometricType>[];
     }
   }
