@@ -48,4 +48,4 @@ app.*.map.json
 .env
  
 # .gitignore
-hardik_rent_backend/serviceAccountKey.json 
+hardik_rent_backend/serviceAccountKey.json hardik_rent_backend/serviceAccountKey.json
