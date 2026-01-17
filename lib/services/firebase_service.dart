@@ -72,6 +72,23 @@ class FirebaseService {
     await _db.collection('flats').doc(flat.id).update(flat.toJson()..remove('id'));
   }
 
+  // --- Firestore: Apartments ---
+  Stream<List<Apartment>> getApartments() {
+    return _db.collection('apartments').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return Apartment.fromJson({...doc.data(), 'id': doc.id});
+      }).toList();
+    });
+  }
+
+  Future<void> addApartment(Apartment apartment) async {
+    await _db.collection('apartments').add(apartment.toJson()..remove('id'));
+  }
+
+  Future<void> updateApartment(Apartment apartment) async {
+    await _db.collection('apartments').doc(apartment.id).update(apartment.toJson()..remove('id'));
+  }
+
   // --- Firestore: Tenants (Users) ---
   Stream<List<User>> getTenants() {
     return _db.collection('users')
@@ -133,6 +150,15 @@ class FirebaseService {
     await _db.collection('payments').doc(paymentId).update({
       'status': status.toString().split('.').last
     });
+  }
+
+  // --- Firestore: Maintenance Tickets ---
+  String getNewMaintenanceTicketId() {
+    return _db.collection('maintenanceTickets').doc().id;
+  }
+
+  Future<void> addMaintenanceTicket(MaintenanceTicket ticket) async {
+    await _db.collection('maintenanceTickets').doc(ticket.id).set(ticket.toJson());
   }
 
   // --- Storage ---

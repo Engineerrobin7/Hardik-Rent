@@ -66,17 +66,25 @@ class _MaintenanceRequestScreenState extends State<MaintenanceRequestScreen> {
         photoUrls.add(url);
       }
 
-      // 2. Submit to Node.js Backend (MySQL)
-      await _apiService.createMaintenanceTicket({
-        'title': _titleController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'priority': _priority.name,
-        'unitId': widget.propertyId, // Using propertyId as unitId for now in this screen's context
-        'photoUrl': photoUrls.isNotEmpty ? photoUrls.first : null,
-      });
+      // 2. Submit to Firestore
+      String newTicketId = _storageService.getNewMaintenanceTicketId(); // Generate a new ID from Firebase
 
-      // 3. Fallback/Sync to Firestore (Optional based on architecture)
-      // We already have the MySQL backend, so Firestore is redundant but keeping for local listeners if needed
+      final newTicket = MaintenanceTicket(
+        id: newTicketId,
+        propertyId: widget.propertyId,
+        propertyAddress: widget.propertyAddress,
+        tenantId: widget.tenantId,
+        tenantName: widget.tenantName,
+        ownerId: widget.ownerId,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        priority: _priority,
+        status: TicketStatus.open, // Default status
+        photoUrls: photoUrls,
+        createdAt: DateTime.now(),
+      );
+
+      await _storageService.addMaintenanceTicket(newTicket);
 
       // 3. Notify Owner (simulated)
       // await NotificationService.sendNotification(...)

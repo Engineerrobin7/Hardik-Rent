@@ -15,6 +15,7 @@ class AppProvider with ChangeNotifier {
   StreamSubscription? _tenantsSub;
   StreamSubscription? _rentSub;
   StreamSubscription? _paymentSub;
+  StreamSubscription? _apartmentsSub;
 
   List<Apartment> get apartments => _apartments;
   List<Flat> get flats => _flats;
@@ -22,57 +23,56 @@ class AppProvider with ChangeNotifier {
   List<RentRecord> get rentRecords => _rentRecords;
   List<PaymentRecord> get payments => _payments;
 
-  AppProvider() {
-    _initData();
-  }
+    AppProvider() {
 
-  // Placeholder for ApiService
-  final _apiService = ApiService(); // Added locally for now, assuming imported
+      _flatsSub = _service.getFlats().listen((flats) {
 
-  void _initData() async {
-    // 1. Fetch from MySQL Backend via ApiService
-    await fetchFlats();
+        _flats = flats;
 
-    // Keep Firebase for other streams if needed, or migration needed there too
-    // For now we assume only Flats are moved to MySQL fully in this step.
-  }
+        notifyListeners();
 
-  Future<void> fetchFlats() async {
-    try {
-      final properties = await _apiService.getProperties();
-      
-      List<Flat> loadedFlats = [];
-      List<Apartment> loadedApartments = [];
+      });
 
-      for (var propData in properties) {
-        // Map Property to Apartment
-        final apt = Apartment(
-          id: propData['id'],
-          ownerId: 'current_owner', // placeholder
-          name: propData['name'],
-          address: propData['address'],
-        );
-        loadedApartments.add(apt);
+      _tenantsSub = _service.getTenants().listen((tenants) {
 
-        // Map Units to Flats
-        if (propData['units'] != null) {
-          for (var unitData in propData['units']) {
-            loadedFlats.add(Flat.fromJson({
-              ...unitData,
-              'apartmentId': apt.id, // Link to property
-            }));
-          }
+        _tenants = tenants;
+
+        notifyListeners();
+
+      });
+
+      _rentSub = _service.getRentRecords().listen((rentRecords) {
+
+        _rentRecords = rentRecords;
+
+        notifyListeners();
+
+      });
+
+          _paymentSub = _service.getPayments().listen((payments) {
+
+            _payments = payments;
+
+            notifyListeners();
+
+          });
+
+          _apartmentsSub = _service.getApartments().listen((apartments) {
+
+            _apartments = apartments;
+
+            notifyListeners();
+
+          });
+
         }
-      }
 
-      _apartments = loadedApartments;
-      _flats = loadedFlats;
-      notifyListeners();
 
-    } catch (e) {
-      debugPrint('Error fetching flats from API: $e');
-    }
-  }
+
+
+
+
+
 
   Future<void> toggleElectricity(String flatId, bool isActive) async {
     try {
@@ -107,6 +107,7 @@ class AppProvider with ChangeNotifier {
     _tenantsSub?.cancel();
     _rentSub?.cancel();
     _paymentSub?.cancel();
+    _apartmentsSub?.cancel();
     super.dispose();
   }
 
