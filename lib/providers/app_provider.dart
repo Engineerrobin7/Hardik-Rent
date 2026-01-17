@@ -2,11 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/models/models.dart';
 import '../services/firebase_service.dart';
-import '../services/api_service.dart';
 
 class AppProvider with ChangeNotifier {
   final FirebaseService _service = FirebaseService();
-  
   List<Apartment> _apartments = [];
   List<Flat> _flats = [];
   List<User> _tenants = [];

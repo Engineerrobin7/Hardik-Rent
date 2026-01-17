@@ -1,6 +1,6 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
-const db = require('../config/db');
+
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -22,11 +22,7 @@ exports.createOrder = async (req, res) => {
 
         const order = await razorpay.orders.create(options);
 
-        // Optional: Store the pending payment in your MySQL DB
-        await db.execute(
-            'INSERT INTO payments (id, unit_id, tenant_id, amount, status, due_date) VALUES (?, ?, ?, ?, ?, ?)',
-            [order.id, unitId, tenantId, amount, 'pending', new Date()]
-        );
+        // Flutter app will handle storing the pending payment in Firestore.
 
         res.status(200).json(order);
     } catch (error) {
@@ -45,11 +41,7 @@ exports.verifyPayment = async (req, res) => {
             .digest('hex');
 
         if (generated_signature === razorpay_signature) {
-            // Update payment status in MySQL
-            await db.execute(
-                'UPDATE payments SET status = ?, transaction_id = ?, payment_date = NOW() WHERE id = ?',
-                ['paid', razorpay_payment_id, razorpay_order_id]
-            );
+            // Flutter app will handle updating the payment status in Firestore.
 
             res.status(200).json({ status: 'success', message: 'Payment verified successfully' });
         } else {

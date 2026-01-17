@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../data/models/models.dart';
 import '../services/firebase_service.dart';
-import '../services/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final FirebaseService _service = FirebaseService();
-  final ApiService _apiService = ApiService();
   User? _currentUser;
   bool _isLoading = false;
 
@@ -20,9 +18,9 @@ class AuthProvider with ChangeNotifier {
   Future<void> _init() async {
     final authUser = await _service.getCurrentUser();
     if (authUser != null) {
-      final userData = await _apiService.getUserProfile();
+      final userData = await _service.getUser(authUser.uid); // Fetch from FirebaseService
       if (userData != null) {
-        _currentUser = User.fromJson(userData);
+        _currentUser = userData; // Assuming getUser returns User object directly
         notifyListeners();
       }
     }
@@ -35,10 +33,9 @@ class AuthProvider with ChangeNotifier {
     try {
       final authUser = await _service.signIn(email, password);
       if (authUser != null) {
-        // Fetch from MySQL instead of Firestore
-        final userData = await _apiService.getUserProfile();
+        final userData = await _service.getUser(authUser.uid); // Fetch from FirebaseService
         if (userData != null) {
-          _currentUser = User.fromJson(userData);
+          _currentUser = userData;
           _isLoading = false;
           notifyListeners();
           return true;
@@ -73,15 +70,8 @@ class AuthProvider with ChangeNotifier {
           role: role,
         );
         
-        // Save profile to Firestore (Backup/Sync)
+        // Save profile to Firestore
         await _service.addTenant(newUser);
-        
-        // Sync with MySQL (This is now the primary storage)
-        await _apiService.syncUserWithBackend(
-          email: newUser.email,
-          name: newUser.name,
-          role: newUser.role.toString().split('.').last,
-        );
 
         _currentUser = newUser;
         _isLoading = false;
