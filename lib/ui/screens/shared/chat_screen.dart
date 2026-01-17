@@ -23,6 +23,7 @@ class ChatScreen extends StatefulWidget {
     required this.otherUserId,
     required this.otherUserName,
     required this.propertyAddress,
+    required this.currentUserName,
   }) : super(key: key);
 
   @override
@@ -55,7 +56,7 @@ class _ChatScreenState extends State<ChatScreen> {
       await _chatService.sendMessage(
         chatRoomId: widget.chatRoomId,
         senderId: widget.currentUserId,
-        senderName: 'Me', // You might want to pass dynamic sender name
+        senderName: widget.currentUserName,
         receiverId: widget.otherUserId,
         message: message,
         attachmentUrl: attachmentUrl,

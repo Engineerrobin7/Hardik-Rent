@@ -4,7 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../data/models/models.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000/api'; // Change for production
+  static const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'http://10.0.2.2:3000/api',
+  );
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
 
   // Singleton

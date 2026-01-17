@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 class PaymentService {
   late Razorpay _razorpay;
   final ApiService _apiService = ApiService();
-  final String _razorpayKey = 'rzp_test_placeholder'; // Replace with real key
+  final String _razorpayKey = const String.fromEnvironment(
+    'RAZORPAY_KEY',
+    defaultValue: 'rzp_test_placeholder', // Replace with your actual TEST key
+  );
 
   static final PaymentService _instance = PaymentService._internal();
   factory PaymentService() => _instance;
