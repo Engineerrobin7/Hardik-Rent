@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import '../data/models/models.dart';
 
 class ApiService {
   static const String baseUrl = 'http://10.0.2.2:3000/api'; // Change for production
@@ -39,6 +40,17 @@ class ApiService {
     }
   }
 
+  Future<void> createUnit(Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/properties/unit'),
+      headers: await _getHeaders(),
+      body: json.encode(data),
+    );
+    if (response.statusCode != 201) {
+       throw Exception('Failed to create unit: ${response.body}');
+    }
+  }
+
   Future<void> updateUnitStatus(String unitId, String status, {String? tenantId}) async {
     final response = await http.patch(
       Uri.parse('$baseUrl/properties/unit-status'),
@@ -51,6 +63,40 @@ class ApiService {
     );
     if (response.statusCode != 200) {
        throw Exception('Failed to update unit: ${response.body}');
+    }
+  }
+
+  Future<String> createTenantUser(User tenant) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/create-tenant'),
+      headers: await _getHeaders(),
+      body: json.encode({
+        'name': tenant.name,
+        'email': tenant.email,
+        'phone': tenant.phoneNumber ?? '',
+        'role': 'tenant'
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final data = json.decode(response.body);
+      return data['id'];
+    } else {
+       throw Exception('Failed to create tenant: ${response.body}');
+    }
+  }
+
+  Future<void> toggleElectricity(String unitId, bool isActive) async {
+    final response = await http.patch(
+      Uri.parse('$baseUrl/properties/toggle-electricity'),
+      headers: await _getHeaders(),
+      body: json.encode({
+        'unitId': unitId,
+        'isActive': isActive,
+      }),
+    );
+    if (response.statusCode != 200) {
+       throw Exception('Failed to toggle electricity: ${response.body}');
     }
   }
 
@@ -152,6 +198,20 @@ class ApiService {
     );
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Failed to sync user with backend');
+    }
+  }
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/me'),
+        headers: await _getHeaders(),
+      );
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
   }
 }

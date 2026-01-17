@@ -54,8 +54,20 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Hardik Rent Backend running on port ${PORT}`);
+});
+
+server.on('error', (e) => {
+    if (e.code === 'EADDRINUSE') {
+        console.error('Address in use, retrying...');
+        setTimeout(() => {
+            server.close();
+            server.listen(PORT);
+        }, 1000);
+    } else {
+        console.error('Server Error:', e);
+    }
 });
 
 module.exports = app;

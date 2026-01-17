@@ -271,16 +271,6 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              const Icon(Icons.trending_up, color: Colors.white70, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                '+12% from last month',
-                style: TextStyle(color: Colors.white.withAlpha(204), fontSize: 14),
-              ),
-            ],
-          ),
         ],
       ),
     );

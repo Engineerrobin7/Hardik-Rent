@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/models/models.dart';
 import '../services/firebase_service.dart';
+import '../services/api_service.dart';
 
 class AppProvider with ChangeNotifier {
   final FirebaseService _service = FirebaseService();
@@ -27,33 +28,80 @@ class AppProvider with ChangeNotifier {
     _initData();
   }
 
-  void _initData() {
-    // Keep one dummy apartment for MVP as we haven't built Property Management UI yet
-    _apartments = [
-      Apartment(id: 'apt_1', ownerId: 'owner_1', name: 'Shanti Niwas', address: '123 Sky Lane, Mumbai'),
-    ];
+  // Placeholder for ApiService
+  final _apiService = ApiService(); // Added locally for now, assuming imported
 
-    // Listen to Streams
-    _flatsSub = _service.getFlats().listen((data) {
-      _flats = data;
-      notifyListeners();
-    });
+  void _initData() async {
+    // 1. Fetch from MySQL Backend via ApiService
+    await fetchFlats();
 
-    _tenantsSub = _service.getTenants().listen((data) {
-      _tenants = data;
-      notifyListeners();
-    });
-
-    _rentSub = _service.getRentRecords().listen((data) {
-      _rentRecords = data;
-      notifyListeners();
-    });
-
-    _paymentSub = _service.getPayments().listen((data) {
-      _payments = data;
-      notifyListeners();
-    });
+    // Keep Firebase for other streams if needed, or migration needed there too
+    // For now we assume only Flats are moved to MySQL fully in this step.
   }
+
+  Future<void> fetchFlats() async {
+    try {
+      final properties = await _apiService.getProperties();
+      
+      List<Flat> loadedFlats = [];
+      List<Apartment> loadedApartments = [];
+
+      for (var propData in properties) {
+        // Map Property to Apartment
+        final apt = Apartment(
+          id: propData['id'],
+          ownerId: 'current_owner', // placeholder
+          name: propData['name'],
+          address: propData['address'],
+        );
+        loadedApartments.add(apt);
+
+        // Map Units to Flats
+        if (propData['units'] != null) {
+          for (var unitData in propData['units']) {
+            loadedFlats.add(Flat.fromJson({
+              ...unitData,
+              'apartmentId': apt.id, // Link to property
+            }));
+          }
+        }
+      }
+
+      _apartments = loadedApartments;
+      _flats = loadedFlats;
+      notifyListeners();
+
+    } catch (e) {
+      debugPrint('Error fetching flats from API: $e');
+    }
+  }
+
+  Future<void> toggleElectricity(String flatId, bool isActive) async {
+    try {
+      await _apiService.toggleElectricity(flatId, isActive);
+      // Optimistic Update
+      final index = _flats.indexWhere((f) => f.id == flatId);
+      if (index != -1) {
+        final old = _flats[index];
+        _flats[index] = Flat(
+          id: old.id,
+          apartmentId: old.apartmentId,
+          flatNumber: old.flatNumber,
+          floor: old.floor,
+          monthlyRent: old.monthlyRent,
+          isOccupied: old.isOccupied,
+          currentTenantId: old.currentTenantId,
+          isElectricityActive: isActive,
+        );
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error toggling electricity: $e');
+      rethrow;
+    }
+  }
+
+
 
   @override
   void dispose() {
@@ -64,7 +112,16 @@ class AppProvider with ChangeNotifier {
     super.dispose();
   }
 
-  // Apartment Methods (Placeholder)
+  // Apartment Methods
+  Future<void> addProperty(String name, String address) async {
+    try {
+      await _apiService.createProperty({'name': name, 'address': address});
+      await fetchFlats(); // Refresh data
+    } catch (e) {
+      debugPrint('Error creating property: $e');
+    }
+  }
+
   void addApartment(Apartment apt) {
     _apartments.add(apt);
     notifyListeners();
@@ -72,7 +129,17 @@ class AppProvider with ChangeNotifier {
 
   // Flat Methods
   Future<void> addFlat(Flat flat) async {
-    await _service.addFlat(flat);
+     try {
+       await _apiService.createUnit({
+         'propertyId': flat.apartmentId, // Using apartmentId as propertyId
+         'unitNumber': flat.flatNumber,
+         'floorNumber': flat.floor,
+         'rentAmount': flat.monthlyRent
+       });
+       await fetchFlats();
+     } catch (e) {
+       debugPrint('Error adding flat: $e');
+     }
   }
 
   Future<void> updateFlat(Flat flat) async {
@@ -81,24 +148,28 @@ class AppProvider with ChangeNotifier {
 
   // Tenant Methods
   Future<void> addTenant(User tenant, String flatId) async {
-    // 1. Add User to 'users' collection
-    await _service.addTenant(tenant);
-    
-    // 2. Update Flat to occupied
-    final flatIndex = _flats.indexWhere((f) => f.id == flatId);
-    if (flatIndex != -1) {
-      final updatedFlat = Flat(
-        id: _flats[flatIndex].id,
-        apartmentId: _flats[flatIndex].apartmentId,
-        flatNumber: _flats[flatIndex].flatNumber,
-        floor: _flats[flatIndex].floor,
-        monthlyRent: _flats[flatIndex].monthlyRent,
-        isOccupied: true,
-        currentTenantId: tenant.id,
+    try {
+      // 1. Create Tenant User in Backend
+      // We'll use a new method for this
+      final createdTenantId = await _apiService.createTenantUser(tenant);
+
+      // 2. Assign to Unit
+      await _apiService.updateUnitStatus(
+        flatId, 
+        'occupied',
+        tenantId: createdTenantId
       );
-      await _service.updateFlat(updatedFlat);
+      
+      // Refresh local data
+      await fetchFlats();
+      
+    } catch (e) {
+      debugPrint('Error adding tenant: $e');
+      rethrow;
     }
   }
+
+
 
   // Rent Methods
   Future<void> generateMonthlyRent(String flatId, String month, double amount, DateTime dueDate) async {

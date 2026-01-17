@@ -1,0 +1,98 @@
+Package file_picker:linux references file_picker:linux as the default plugin, but it does not provide an inline implementation.
+Ask the maintainers of file_picker to either avoid referencing a default implementation via `platforms: linux: default_package: file_picker` or add an inline implementation to file_picker via `platforms: linux:` `pluginClass` or `dartPluginClass`.
+
+Package file_picker:macos references file_picker:macos as the default plugin, but it does not provide an inline implementation.
+Ask the maintainers of file_picker to either avoid referencing a default implementation via `platforms: macos: default_package: file_picker` or add an inline implementation to file_picker via `platforms: macos:` `pluginClass` or `dartPluginClass`.
+
+Package file_picker:windows references file_picker:windows as the default plugin, but it does not provide an inline implementation.
+Ask the maintainers of file_picker to either avoid referencing a default implementation via `platforms: windows: default_package: file_picker` or add an inline implementation to file_picker via `platforms: windows:` `pluginClass` or `dartPluginClass`.
+
+Launching lib\main.dart on sdk gphone64 x86 64 in debug mode...
+Upgrading build.gradle.kts
+Running Gradle task 'assembleDebug'...                          
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+A problem occurred configuring project ':share_plus'.
+> Could not resolve all artifacts for configuration 'classpath'.
+   > Could not download gradle-8.2.0.jar (com.android.tools.build:gradle:8.2.0)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.0/gradle-8.2.0.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.0/gradle-8.2.0.jar'.
+            > Got socket exception during request. It might be caused by SSL misconfiguration
+               > Network is unreachable: getsockopt
+   > Could not download builder-8.2.0.jar (com.android.tools.build:builder:8.2.0)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.0/builder-8.2.0.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.0/builder-8.2.0.jar'.
+            > Got socket exception during request. It might be caused by SSL misconfiguration
+               > Network is unreachable: getsockopt
+   > Could not download bundletool-1.15.2.jar (com.android.tools.build:bundletool:1.15.2)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.jar'.
+            > Got socket exception during request. It might be caused by SSL misconfiguration
+               > Network is unreachable: getsockopt
+   > Could not download protos-31.2.0.jar (com.android.tools.analytics-library:protos:31.2.0)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.0/protos-31.2.0.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.0/protos-31.2.0.jar'.
+            > Got socket exception during request. It might be caused by SSL misconfiguration
+               > Network is unreachable: getsockopt
+   > Could not download kotlin-compiler-embeddable-1.7.22.jar (org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.22)
+      > Could not get resource 'https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.7.22/kotlin-compiler-embeddable-1.7.22.jar'.
+         > Could not GET 'https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.7.22/kotlin-compiler-embeddable-1.7.22.jar'.
+            > Got socket exception during request. It might be caused by SSL misconfiguration
+               > Network is unreachable: getsockopt
+> Failed to notify project evaluation listener.
+   > java.lang.NullPointerException (no error message)
+   > java.lang.NullPointerException (no error message)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 59s
+Running Gradle task 'assembleDebug'...                             59.7s
+[!] Gradle threw an error while downloading artifacts from the network.
+Retrying Gradle Build: #1, wait time: 100ms
+Running Gradle task 'assembleDebug'...                          
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+A problem occurred configuring project ':share_plus'.
+> Could not resolve all artifacts for configuration 'classpath'.
+   > Could not download gradle-8.2.0.jar (com.android.tools.build:gradle:8.2.0)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.0/gradle-8.2.0.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.2.0/gradle-8.2.0.jar'.
+            > dl.google.com
+   > Could not download builder-8.2.0.jar (com.android.tools.build:builder:8.2.0)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.0/builder-8.2.0.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/build/builder/8.2.0/builder-8.2.0.jar'.
+            > No such host is known (dl.google.com)
+   > Could not download bundletool-1.15.2.jar (com.android.tools.build:bundletool:1.15.2)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/build/bundletool/1.15.2/bundletool-1.15.2.jar'.
+            > dl.google.com
+   > Could not download protos-31.2.0.jar (com.android.tools.analytics-library:protos:31.2.0)
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.0/protos-31.2.0.jar'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/analytics-library/protos/31.2.0/protos-31.2.0.jar'.
+            > dl.google.com
+   > Could not download kotlin-compiler-embeddable-1.7.22.jar (org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.22)
+      > Could not get resource 'https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.7.22/kotlin-compiler-embeddable-1.7.22.jar'.
+         > Could not GET 'https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.7.22/kotlin-compiler-embeddable-1.7.22.jar'.
+            > No such host is known (repo.maven.apache.org)
+> Failed to notify project evaluation listener.
+   > java.lang.NullPointerException (no error message)
+   > java.lang.NullPointerException (no error message)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 1m 30s
+Running Gradle task 'assembleDebug'...                             90.5s
+[!] Gradle threw an error while downloading artifacts from the network.
+Error: Gradle task assembleDebug failed with exit code 1

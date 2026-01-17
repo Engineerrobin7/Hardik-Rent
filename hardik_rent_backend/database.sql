@@ -37,6 +37,7 @@ CREATE TABLE units (
     status ENUM('vacant', 'occupied', 'maintenance') DEFAULT 'vacant',
     tenant_id VARCHAR(255),
     rent_amount DECIMAL(10, 2),
+    is_electricity_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,

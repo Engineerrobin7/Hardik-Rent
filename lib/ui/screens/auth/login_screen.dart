@@ -12,21 +12,50 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
-  final _emailController = TextEditingController(text: 'owner@hardik.com');
-  final _passwordController = TextEditingController(text: 'password');
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  late AnimationController _animController;
-  late Animation<Offset> _slideAnimation;
 
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
-    );
-    _animController.forward();
+  void _handleForgotPassword() async {
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter your email address'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.errorColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      await auth.resetPassword(_emailController.text.trim());
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Password reset email sent! Check your inbox.'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.green,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Could not send reset email. This feature might be misconfigured.'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppTheme.errorColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
   }
 
   void _handleLogin() async {
@@ -56,7 +85,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   void dispose() {
-    _animController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -86,9 +116,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40.0),
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Column(
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
@@ -140,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: _handleForgotPassword,
                         child: const Text('Forgot Password?', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
@@ -175,51 +203,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       ],
                     ),
                     const SizedBox(height: 40),
-                    _buildDemoAccountBox(),
+                    // _buildDemoAccountBox(),
                   ],
                 ),
-              ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDemoAccountBox() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.info_outline_rounded, size: 18, color: Colors.blueGrey),
-              SizedBox(width: 8),
-              Text('DEMO ACCESS', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _demoRow('Owner', 'owner@hardik.com'),
-          const SizedBox(height: 8),
-          _demoRow('Tenant', 'tenant@hardik.com'),
-        ],
-      ),
-    );
-  }
-
-  Widget _demoRow(String role, String email) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(role, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-        Text(email, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-      ],
     );
   }
 }

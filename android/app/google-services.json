@@ -1,0 +1,29 @@
+{
+    "project_info": {
+        "project_number": "845512708355",
+        "project_id": "hardik-rent",
+        "storage_bucket": "hardik-rent.firebasestorage.app"
+    },
+    "client": [
+        {
+            "client_info": {
+                "mobilesdk_app_id": "1:845512708355:android:49ad93a27b6a7162e61936",
+                "android_client_info": {
+                    "package_name": "com.hardikrent.hardik_rent"
+                }
+            },
+            "oauth_client": [],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyAWIognJ4LVYL74XlbtB7yrGOpDnVkj0Sw"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": []
+                }
+            }
+        }
+    ],
+    "configuration_version": "1"
+}

@@ -61,6 +61,23 @@ exports.createProperty = async (req, res) => {
     }
 };
 
+// Create Single Unit
+exports.createUnit = async (req, res) => {
+    try {
+        const { propertyId, floorNumber, unitNumber, rentAmount } = req.body;
+        const unitId = uuidv4();
+
+        await db.execute(
+            'INSERT INTO units (id, property_id, floor_number, unit_number, rent_amount, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [unitId, propertyId, floorNumber, unitNumber, rentAmount, 'vacant']
+        );
+
+        res.status(201).json({ id: unitId, message: 'Unit created successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Update a unit status (FIXED RACE CONDITION USING TRANSACTIONS)
 exports.updateUnitStatus = async (req, res) => {
     const connection = await db.getConnection();
@@ -94,5 +111,25 @@ exports.updateUnitStatus = async (req, res) => {
         res.status(500).json({ error: error.message });
     } finally {
         connection.release();
+    }
+};
+
+// Toggle Electricity
+exports.toggleElectricity = async (req, res) => {
+    try {
+        const { unitId, isActive } = req.body;
+
+        // Convert boolean to 1 or 0 for MySQL
+        const intStatus = isActive ? 1 : 0;
+
+        await db.execute(
+            'UPDATE units SET is_electricity_active = ? WHERE id = ?',
+            [intStatus, unitId]
+        );
+
+        res.status(200).json({ message: `Electricity ${isActive ? 'restored' : 'cut'} successfully` });
+    } catch (error) {
+        console.error('Electricity Toggle Error:', error);
+        res.status(500).json({ error: error.message });
     }
 };

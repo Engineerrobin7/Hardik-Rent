@@ -20,8 +20,11 @@ class AuthProvider with ChangeNotifier {
   Future<void> _init() async {
     final authUser = await _service.getCurrentUser();
     if (authUser != null) {
-      _currentUser = await _service.getUser(authUser.uid);
-      notifyListeners();
+      final userData = await _apiService.getUserProfile();
+      if (userData != null) {
+        _currentUser = User.fromJson(userData);
+        notifyListeners();
+      }
     }
   }
 
@@ -32,24 +35,14 @@ class AuthProvider with ChangeNotifier {
     try {
       final authUser = await _service.signIn(email, password);
       if (authUser != null) {
-        _currentUser = await _service.getUser(authUser.uid);
-        
-        // Sync with MySQL
-        if (_currentUser != null) {
-          try {
-            await _apiService.syncUserWithBackend(
-              email: _currentUser!.email,
-              name: _currentUser!.name,
-              role: _currentUser!.role.toString().split('.').last,
-            );
-          } catch (e) {
-            debugPrint('Backend Sync Error: $e');
-          }
+        // Fetch from MySQL instead of Firestore
+        final userData = await _apiService.getUserProfile();
+        if (userData != null) {
+          _currentUser = User.fromJson(userData);
+          _isLoading = false;
+          notifyListeners();
+          return true;
         }
-
-        _isLoading = false;
-        notifyListeners();
-        return true;
       }
     } catch (e) {
       debugPrint('Login Error: $e');
@@ -80,19 +73,15 @@ class AuthProvider with ChangeNotifier {
           role: role,
         );
         
-        // Save profile to Firestore
-        await _service.addTenant(newUser); // This puts it in 'users' collection
+        // Save profile to Firestore (Backup/Sync)
+        await _service.addTenant(newUser);
         
-        // Sync with MySQL
-        try {
-          await _apiService.syncUserWithBackend(
-            email: newUser.email,
-            name: newUser.name,
-            role: newUser.role.toString().split('.').last,
-          );
-        } catch (e) {
-          debugPrint('Backend Sync Error: $e');
-        }
+        // Sync with MySQL (This is now the primary storage)
+        await _apiService.syncUserWithBackend(
+          email: newUser.email,
+          name: newUser.name,
+          role: newUser.role.toString().split('.').last,
+        );
 
         _currentUser = newUser;
         _isLoading = false;
@@ -106,5 +95,14 @@ class AuthProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
     return false;
+  }
+
+  Future<void> resetPassword(String email) async {
+    try {
+      await _service.resetPassword(email);
+    } catch (e) {
+      debugPrint('Reset Password Error: $e');
+      rethrow;
+    }
   }
 }

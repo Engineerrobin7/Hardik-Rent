@@ -29,11 +29,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_API_KEY',
-    appId: 'YOUR_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'your-project-id',
-    storageBucket: 'your-project-id.appspot.com',
+    apiKey: 'AIzaSyAWIognJ4LVYL74XlbtB7yrGOpDnVkj0Sw',
+    appId: '1:845512708355:android:49ad93a27b6a7162e61936',
+    messagingSenderId: '845512708355',
+    projectId: 'hardik-rent',
+    storageBucket: 'hardik-rent.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

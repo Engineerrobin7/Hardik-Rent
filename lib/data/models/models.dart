@@ -96,6 +96,7 @@ class Flat {
   final double monthlyRent;
   final bool isOccupied;
   final String? currentTenantId;
+  final bool isElectricityActive;
 
   Flat({
     required this.id,
@@ -105,17 +106,21 @@ class Flat {
     required this.monthlyRent,
     this.isOccupied = false,
     this.currentTenantId,
+    this.isElectricityActive = true,
   });
 
   factory Flat.fromJson(Map<String, dynamic> json) {
     return Flat(
       id: json['id'] ?? '',
       apartmentId: json['apartmentId'] ?? '',
-      flatNumber: json['flatNumber'] ?? '',
-      floor: json['floor'] ?? 0,
-      monthlyRent: (json['monthlyRent'] ?? 0.0).toDouble(),
-      isOccupied: json['isOccupied'] ?? false,
-      currentTenantId: json['currentTenantId'],
+      flatNumber: json['flatNumber'] ?? json['unit_number'] ?? '', // Handle MySQL 'unit_number'
+      floor: json['floor'] ?? json['floor_number'] ?? 0,
+      monthlyRent: (json['monthlyRent'] ?? json['rent_amount'] ?? 0.0) is String 
+          ? double.tryParse(json['monthlyRent'] ?? json['rent_amount'] ?? '0.0') ?? 0.0 
+          : (json['monthlyRent'] ?? json['rent_amount'] ?? 0.0).toDouble(),
+      isOccupied: json['isOccupied'] ?? (json['status'] == 'occupied'), // Handle MySQL 'status'
+      currentTenantId: json['currentTenantId'] ?? json['tenant_id'],
+      isElectricityActive: json['isElectricityActive'] ?? (json['is_electricity_active'] == 1),
     );
   }
 
@@ -128,6 +133,7 @@ class Flat {
       'monthlyRent': monthlyRent,
       'isOccupied': isOccupied,
       'currentTenantId': currentTenantId,
+      'isElectricityActive': isElectricityActive,
     };
   }
 }

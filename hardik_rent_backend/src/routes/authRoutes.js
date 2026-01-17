@@ -7,4 +7,9 @@ router.post('/register', authController.registerUser);
 router.post('/fcm-token', verifyToken, authController.updateFcmToken);
 router.post('/sync', verifyToken, authController.syncUser);
 
+
+// Get current user profile
+router.get('/me', verifyToken, authController.getUser);
+router.post('/create-tenant', verifyToken, authController.createTenant);
+
 module.exports = router;

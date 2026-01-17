@@ -47,6 +47,14 @@ class FirebaseService {
     await _auth.signOut();
   }
 
+  Future<void> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // --- Firestore: Flats ---
   Stream<List<Flat>> getFlats() {
     return _db.collection('flats').snapshots().map((snapshot) {

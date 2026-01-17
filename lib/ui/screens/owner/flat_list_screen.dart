@@ -23,7 +23,7 @@ class FlatListScreen extends StatelessWidget {
               itemCount: app.flats.length,
               itemBuilder: (context, index) {
                 final flat = app.flats[index];
-                final apartment = app.apartments.firstWhere((a) => a.id == flat.apartmentId);
+                final apartment = app.apartments.firstWhere((a) => a.id == flat.apartmentId, orElse: () => Apartment(id: '', name: 'Unknown', address: '', ownerId: ''));
 
                 return _FlatCard(flat: flat, apartmentName: apartment.name);
               },
@@ -119,6 +119,39 @@ class _FlatCard extends StatelessWidget {
                   const Icon(Icons.arrow_forward_rounded, size: 20, color: AppTheme.primaryColor),
                 ],
               ),
+              const SizedBox(height: 16),
+              if (flat.isOccupied) ...[
+                const Divider(),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          flat.isElectricityActive ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+                          color: flat.isElectricityActive ? Colors.amber : Colors.grey,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          flat.isElectricityActive ? 'Power ON' : 'Power CUT',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: flat.isElectricityActive ? Colors.black87 : Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Switch(
+                      value: flat.isElectricityActive,
+                      activeColor: Colors.amber,
+                      onChanged: (val) {
+                         Provider.of<AppProvider>(context, listen: false).toggleElectricity(flat.id, val);
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

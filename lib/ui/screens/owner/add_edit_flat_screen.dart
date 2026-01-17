@@ -73,17 +73,31 @@ class _AddEditFlatScreenState extends State<AddEditFlatScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButtonFormField<String>(
-              initialValue: _selectedApartmentId,
-              decoration: const InputDecoration(labelText: 'Select Apartment'),
-              items: apartments.map((apt) {
-                return DropdownMenuItem(
-                  value: apt.id,
-                  child: Text(apt.name),
-                );
-              }).toList(),
-              onChanged: (val) => setState(() => _selectedApartmentId = val),
-            ),
+            if (apartments.isEmpty)
+              GestureDetector(
+                onTap: () {
+                   // Quick placeholder to add a property
+                   final app = Provider.of<AppProvider>(context, listen: false);
+                   // In a real app we'd show a dialog. For now, let's auto-create one for testing.
+                   _showAddPropertyDialog(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(12)),
+                  child: const Row(children: [Icon(Icons.add), SizedBox(width: 8), Text("Create New Property")])),
+              )
+            else
+              DropdownButtonFormField<String>(
+                initialValue: _selectedApartmentId,
+                decoration: const InputDecoration(labelText: 'Select Apartment'),
+                items: apartments.map((apt) {
+                  return DropdownMenuItem(
+                    value: apt.id,
+                    child: Text(apt.name),
+                  );
+                }).toList(),
+                onChanged: (val) => setState(() => _selectedApartmentId = val),
+              ),
             const SizedBox(height: 20),
             TextField(
               controller: _numberController,
@@ -111,6 +125,39 @@ class _AddEditFlatScreenState extends State<AddEditFlatScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+  Future<void> _showAddPropertyDialog(BuildContext context) async {
+    final nameController = TextEditingController();
+    final addressController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Property'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Property Name')),
+            TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Address')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () async {
+              if (nameController.text.isNotEmpty && addressController.text.isNotEmpty) {
+                await Provider.of<AppProvider>(context, listen: false).addProperty(
+                  nameController.text,
+                  addressController.text,
+                );
+                if (mounted) Navigator.pop(context);
+              }
+            },
+            child: const Text('Create'),
+          ),
+        ],
       ),
     );
   }

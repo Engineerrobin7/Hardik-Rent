@@ -40,13 +40,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
+    // BYPASS LOGIN FOR TESTING
+    // Navigator.pushReplacementNamed(context, '/owner-dashboard');
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (auth.isAuthenticated) {
-      if (auth.currentUser?.role == UserRole.owner) {
-        Navigator.pushReplacementNamed(context, '/owner-dashboard');
-      } else {
-        Navigator.pushReplacementNamed(context, '/tenant-dashboard');
-      }
+      Navigator.pushReplacementNamed(context, '/owner-dashboard');
+      // if (auth.currentUser?.role == UserRole.owner) {
+      //   Navigator.pushReplacementNamed(context, '/owner-dashboard');
+      // } else {
+      //   Navigator.pushReplacementNamed(context, '/tenant-dashboard');
+      // }
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }
