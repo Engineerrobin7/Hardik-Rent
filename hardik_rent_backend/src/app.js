@@ -5,8 +5,26 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const { verifyToken } = require('./middleware/auth');
+const admin = require('firebase-admin'); // Add firebase-admin
 
 const app = express();
+
+// Initialize Firebase Admin SDK
+if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+        console.log('Firebase Admin SDK initialized successfully from environment variable.');
+    } catch (error) {
+        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', error);
+        process.exit(1); // Exit if Firebase cannot be initialized
+    }
+} else {
+    console.error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set. Firebase Admin SDK not initialized.');
+    process.exit(1); // Exit if Firebase is not configured
+}
 
 // Middleware
 app.use(cors());

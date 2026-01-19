@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.DS_Store
+.env
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+.gcloudignore
+create_demo_accounts.js
+firestore.rules
+migrate_electricity.js
+test_db.js
+src/test_dashboard.html
+.idea
+.vscode

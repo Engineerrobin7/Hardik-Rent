@@ -113,12 +113,12 @@ class Flat {
     return Flat(
       id: json['id'] ?? '',
       apartmentId: json['apartmentId'] ?? '',
-      flatNumber: json['flatNumber'] ?? json['unit_number'] ?? '', // Handle MySQL 'unit_number'
+      flatNumber: json['flatNumber'] ?? json['unit_number'] ?? '',
       floor: json['floor'] ?? json['floor_number'] ?? 0,
       monthlyRent: (json['monthlyRent'] ?? json['rent_amount'] ?? 0.0) is String 
           ? double.tryParse(json['monthlyRent'] ?? json['rent_amount'] ?? '0.0') ?? 0.0 
           : (json['monthlyRent'] ?? json['rent_amount'] ?? 0.0).toDouble(),
-      isOccupied: json['isOccupied'] ?? (json['status'] == 'occupied'), // Handle MySQL 'status'
+      isOccupied: json['isOccupied'] ?? (json['status'] == 'occupied'),
       currentTenantId: json['currentTenantId'] ?? json['tenant_id'],
       isElectricityActive: json['isElectricityActive'] ?? (json['is_electricity_active'] == 1),
     );

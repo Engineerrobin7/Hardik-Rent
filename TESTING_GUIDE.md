@@ -39,11 +39,11 @@
 #### Features:
 1. **Email/Password Registration**
    - New users can register as Owner or Tenant
-   - Syncs with both Firebase Auth and MySQL backend
+   - Syncs with Firebase Auth and Firestore backend
    
 2. **Email/Password Login**
    - Authenticates via Firebase
-   - Fetches user profile from MySQL backend
+   - Fetches user profile from Firestore backend
    - Redirects to role-specific dashboard
 
 3. **Password Reset** ✨ NEW
@@ -294,24 +294,7 @@ npm start
 ```
 Backend should run on http://localhost:3000
 
-### Issue 3: MySQL Connection Error
-**Symptom:** Backend crashes on startup
-
-**Solution:**
-1. Ensure MySQL is running
-2. Check .env file has correct credentials:
-   ```
-   DB_HOST=localhost
-   DB_USER=root
-   DB_PASSWORD=your_password
-   DB_NAME=hardik_rent
-   ```
-3. Run database.sql to create tables:
-   ```bash
-   mysql -u root -p < database.sql
-   ```
-
-### Issue 4: Firebase Not Configured
+### Issue 3: Firebase Not Configured
 **Symptom:** Firebase errors in app
 
 **Solution:**
@@ -324,7 +307,6 @@ Backend should run on http://localhost:3000
 ## 🧪 Complete Testing Checklist
 
 ### Pre-Testing Setup:
-- [ ] MySQL database running
 - [ ] Backend server running (npm start)
 - [ ] Firebase project configured
 - [ ] Demo accounts created in Firebase Auth
@@ -388,7 +370,7 @@ npm start
 
 **Option B - Via Firebase Console:**
 - Add users manually in Firebase Auth
-- Run sync API to add to MySQL
+- Run sync API to add to Firestore
 
 ### 3. Setup Test Data:
 ```bash
@@ -427,7 +409,7 @@ npm start
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| User Registration | ✅ Working | Syncs with Firebase + MySQL |
+| User Registration | ✅ Working | Syncs with Firebase |
 | User Login | ✅ Working | Requires backend running |
 | Forgot Password | ✅ Fixed | Firebase email reset |
 | Owner Dashboard | ✅ Working | Full property management |
@@ -451,8 +433,7 @@ npm start
 1. **Firebase Auth:** All authentication handled by Firebase
 2. **JWT Tokens:** Backend validates Firebase tokens
 3. **Role-Based Access:** Owner/Tenant permissions enforced
-4. **SQL Injection:** Using parameterized queries
-5. **Password Storage:** Never stored in MySQL (Firebase handles)
+4. **Password Storage:** Never stored in Firestore (Firebase handles)
 
 ---
 
@@ -473,7 +454,6 @@ npm start
 4. **Production Deployment:**
    - Update API URLs
    - Configure production Firebase
-   - Setup production MySQL
 
 ---
 
@@ -482,12 +462,9 @@ npm start
 **App won't login:**
 - Check backend is running (http://localhost:3000)
 - Verify Firebase account exists
-- Check MySQL connection
 
 **Backend errors:**
 - Check .env configuration
-- Verify MySQL is running
-- Check database tables exist
 
 **Firebase errors:**
 - Verify google-services.json
@@ -511,4 +488,3 @@ For issues or questions:
 
 **Backend Logs:** Check terminal running npm start
 **App Logs:** Check Flutter debug console
-**Database:** Check MySQL logs
