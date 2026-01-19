@@ -516,6 +516,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -574,6 +575,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
+                // ignore: deprecated_member_use
                 color: _getStatusColor(tenant.status).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(25),
               ),

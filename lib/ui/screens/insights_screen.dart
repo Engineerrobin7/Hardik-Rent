@@ -1,6 +1,8 @@
 // Sprint 1: Insights Screen with Analytics
 // File: lib/ui/screens/owner/insights_screen.dart
 
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 

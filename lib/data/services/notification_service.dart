@@ -25,7 +25,9 @@ class NotificationService {
 
     // Get FCM token
     String? token = await _firebaseMessaging.getToken();
-    print("FCM Token: $token");
+    if (kDebugMode) {
+      print("FCM Token: $token");
+    }
 
     // Initialize local notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -121,7 +123,9 @@ class NotificationService {
       });
       
     } catch (e) {
-      print("Error sending notification: $e");
+      if (kDebugMode) {
+        print("Error sending notification: $e");
+      }
     }
   }
 }

@@ -260,12 +260,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.attach_file),
-                      const SizedBox(width: 8),
-                      const Text('Attachment'),
+                      Icon(Icons.attach_file),
+                      SizedBox(width: 8),
+                      Text('Attachment'),
                     ],
                   ),
                 ),

@@ -122,10 +122,10 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
                                   shape: BoxShape.circle,
                                   border: Border.all(color: AppTheme.primaryColor, width: 2),
                                 ),
-                                child: CircleAvatar(
+                                child: const CircleAvatar(
                                   radius: 24,
                                   backgroundColor: AppTheme.primaryColor,
-                                  child: const Icon(Icons.person, color: Colors.white),
+                                  child: Icon(Icons.person, color: Colors.white),
                                 ),
                               ),
                             ),
