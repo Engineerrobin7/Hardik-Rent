@@ -94,10 +94,10 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
                           tag: 'profile_pic',
                           child: InkWell(
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen())),
-                            child: CircleAvatar(
+                            child: const CircleAvatar(
                               radius: 26,
                               backgroundColor: AppTheme.secondaryColor,
-                              child: const Icon(Icons.person, color: Colors.white),
+                              child: Icon(Icons.person, color: Colors.white),
                             ),
                           ),
                         ),
@@ -310,8 +310,7 @@ class _HistoryTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
+                              Container(            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: (isPaid ? Colors.green : Colors.orange).withAlpha(25),
               shape: BoxShape.circle,

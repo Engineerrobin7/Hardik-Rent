@@ -77,7 +77,7 @@ class AppProvider with ChangeNotifier {
       // Assuming getProperties returns a list of maps, and you have a way to convert them to Apartment and Flat objects
       // This part is complex and depends on your data structure.
       // For now, let's just print them.
-      print(properties);
+      debugPrint(properties.toString());
     } catch (e) {
       debugPrint('Error fetching flats: $e');
     }

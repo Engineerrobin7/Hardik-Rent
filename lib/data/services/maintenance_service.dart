@@ -1,8 +1,9 @@
 // Sprint 3: Maintenance Service
 // File: lib/data/services/maintenance_service.dart
 
-import 'dart:developer';
+
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
@@ -50,7 +51,7 @@ class MaintenanceService {
           .set(newTicket.toJson());
 
     } catch (e) {
-      print('Error creating maintenance ticket: $e');
+      debugPrint('Error creating maintenance ticket: $e');
       rethrow;
     }
   }
@@ -79,7 +80,7 @@ class MaintenanceService {
           .update(updates);
           
     } catch (e) {
-      print('Error updating ticket: $e');
+      debugPrint('Error updating ticket: $e');
       rethrow;
     }
   }
