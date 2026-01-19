@@ -13,6 +13,10 @@ const app = express();
 
 // Initialize Firebase Admin SDK
 if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY === 'your_firebase_service_account_json_here') {
+        console.error('FIREBASE_SERVICE_ACCOUNT_KEY contains placeholder value. Please replace with actual Firebase service account JSON.');
+        process.exit(1); // Exit if Firebase is not configured correctly
+    }
     try {
         const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
         admin.initializeApp({
