@@ -1,11 +1,11 @@
 services:
   - type: web
     name: hardik-rent-backend
-    runtime: docker
-    branch: main
-    region: oregon
+    runtime: node
+    repo: https://github.com/Engineerrobin7/Hardik-Rent.git
     rootDir: hardik_rent_backend
-    dockerfilePath: Dockerfile
+    buildCommand: "npm install"
+    startCommand: "npm start"
     envVars:
-      - key: PORT
-        value: 3000
+      - key: NODE_ENV
+        value: production
