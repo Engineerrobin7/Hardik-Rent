@@ -98,4 +98,28 @@ exports.updateTicketStatus = async (req, res) => {
     }
 };
 
+exports.getTenantTickets = async (req, res) => {
+    try {
+        // Placeholder for fetching tenant-specific maintenance tickets
+        // In a real application, you would implement logic to query tickets
+        // based on the authenticated tenant's ID.
+        res.status(200).json({ message: 'This is a placeholder for getTenantTickets', tickets: [] });
+    } catch (error) {
+        console.error('Get Tenant Tickets Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getOwnerTickets = async (req, res) => {
+    try {
+        // Placeholder for fetching owner-specific maintenance tickets
+        // In a real application, you would implement logic to query tickets
+        // based on the authenticated owner's ID.
+        res.status(200).json({ message: 'This is a placeholder for getOwnerTickets', tickets: [] });
+    } catch (error) {
+        console.error('Get Owner Tickets Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
