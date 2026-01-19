@@ -4,10 +4,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import 'package:intl/intl.dart';
 import '../../../data/models/chat_models.dart';
 import '../../../data/services/chat_service.dart';
+import '../../../services/firebase_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomId;
@@ -15,6 +17,7 @@ class ChatScreen extends StatefulWidget {
   final String otherUserId;
   final String otherUserName;
   final String propertyAddress;
+  final String currentUserName;
 
   const ChatScreen({
     Key? key,
@@ -34,6 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ChatService _chatService = ChatService();
+  final FirebaseService _firebaseService = FirebaseService();
   final ImagePicker _picker = ImagePicker();
   
   bool _isSending = false;
@@ -82,17 +86,21 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _pickImage() async {
-    // This is a placeholder for image picking/uploading logic
-    // In a real app, you would upload the file to Firebase Storage first
-    // then pass the URL to _sendMessage
-    
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      // TODO: Upload image to Firebase Storage here
-      // String imageUrl = await StorageService.uploadFile(File(image.path));
-      // For now, we'll just send a text message indicating an image was selected
-      _messageController.text = "[Image selected: ${image.name}]"; 
-      _sendMessage(attachmentType: 'image');
+      setState(() => _isSending = true);
+      try {
+        final path = 'chat_images/${widget.chatRoomId}/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+        final imageUrl = await _firebaseService.uploadFile(path, File(image.path));
+        await _sendMessage(attachmentUrl: imageUrl, attachmentType: 'image');
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error uploading image: $e')),
+        );
+      } finally {
+        setState(() => _isSending = false);
+      }
     }
   }
 

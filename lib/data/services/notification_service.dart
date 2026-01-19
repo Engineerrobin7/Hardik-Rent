@@ -2,6 +2,7 @@
 // File: lib/data/services/notification_service.dart
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -107,7 +108,7 @@ class NotificationService {
       // await FirebaseFunctions.instance.httpsCallable('sendNotification').call(...)
       
       // For now, we log it (Actual sending requires Server Key which shouldn't be in app)
-      print("Would send notification to $token: $title - $body");
+      debugPrint("Would send notification to $token: $title - $body");
       
       // 3. Save to database for in-app notification center
       await _firestore.collection('notifications').add({

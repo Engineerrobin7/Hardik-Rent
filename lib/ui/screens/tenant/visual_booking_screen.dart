@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../data/models/visual_booking_models.dart';
+import 'booking_form_screen.dart';
 
 class VisualBookingScreen extends StatefulWidget {
   const VisualBookingScreen({Key? key}) : super(key: key);
@@ -270,10 +271,14 @@ class _VisualBookingScreenState extends State<VisualBookingScreen> {
             height: 50,
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Navigate to Booking Form
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Starting booking for Flat ${_selectedFlat!.flatNumber}')),
-                );
+                if (_selectedFlat != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BookingFormScreen(flat: _selectedFlat!),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue[800],

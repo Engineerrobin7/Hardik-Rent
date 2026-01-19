@@ -11,13 +11,13 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install production dependencies.
-RUN npm install --only=production
+RUN npm install && npm cache clean --force
 
 # Copy local code to the container image.
 COPY . .
 
-# Run the web service on the container's port 8080.
-EXPOSE 8080
+# Run the web service on the container's port 3000.
+EXPOSE 3000
 
 # Start the Node.js source as a service.
 CMD [ "npm", "start" ]

@@ -1,10 +1,11 @@
 services:
   - type: web
     name: hardik-rent-backend
-    env: docker
-    repo: https://github.com/YOUR_GITHUB_USERNAME/YOUR_GITHUB_REPO # Replace with your repo URL
-    dockerfilePath: ./hardik_rent_backend/Dockerfile
-    dockerContext: ./hardik_rent_backend
+    runtime: docker
+    branch: main
+    region: oregon
+    rootDir: hardik_rent_backend
+    dockerfilePath: Dockerfile
     envVars:
-      - key: NODE_ENV
-        value: production
+      - key: PORT
+        value: 3000

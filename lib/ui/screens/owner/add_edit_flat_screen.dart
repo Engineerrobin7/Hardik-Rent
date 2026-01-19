@@ -77,7 +77,6 @@ class _AddEditFlatScreenState extends State<AddEditFlatScreen> {
               GestureDetector(
                 onTap: () {
                    // Quick placeholder to add a property
-                   final app = Provider.of<AppProvider>(context, listen: false);
                    // In a real app we'd show a dialog. For now, let's auto-create one for testing.
                    _showAddPropertyDialog(context);
                 },
@@ -148,11 +147,12 @@ class _AddEditFlatScreenState extends State<AddEditFlatScreen> {
           TextButton(
             onPressed: () async {
               if (nameController.text.isNotEmpty && addressController.text.isNotEmpty) {
+                final navigator = Navigator.of(context);
                 await Provider.of<AppProvider>(context, listen: false).addProperty(
                   nameController.text,
                   addressController.text,
                 );
-                if (mounted) Navigator.pop(context);
+                navigator.pop();
               }
             },
             child: const Text('Create'),

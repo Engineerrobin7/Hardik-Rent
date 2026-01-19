@@ -8,7 +8,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../data/models/maintenance_models.dart';
 import '../../../services/firebase_service.dart';
-import '../../../services/api_service.dart';
 
 class MaintenanceRequestScreen extends StatefulWidget {
   final String tenantId;
@@ -41,7 +40,6 @@ class _MaintenanceRequestScreenState extends State<MaintenanceRequestScreen> {
   bool _isSubmitting = false;
   
   final FirebaseService _storageService = FirebaseService();
-  final ApiService _apiService = ApiService();
 
   Future<void> _pickImages() async {
     final List<XFile> images = await _picker.pickMultiImage();

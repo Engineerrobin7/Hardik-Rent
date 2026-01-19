@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/models/models.dart';
+import '../services/api_service.dart';
 import '../services/firebase_service.dart';
 
 class AppProvider with ChangeNotifier {
   final FirebaseService _service = FirebaseService();
+  final ApiService _apiService = ApiService();
   List<Apartment> _apartments = [];
   List<Flat> _flats = [];
   List<User> _tenants = [];
@@ -24,6 +26,8 @@ class AppProvider with ChangeNotifier {
   List<PaymentRecord> get payments => _payments;
 
     AppProvider() {
+
+      fetchFlats();
 
       _flatsSub = _service.getFlats().listen((flats) {
 
@@ -67,12 +71,17 @@ class AppProvider with ChangeNotifier {
 
         }
 
-
-
-
-
-
-
+  Future<void> fetchFlats() async {
+    try {
+      final properties = await _apiService.getProperties();
+      // Assuming getProperties returns a list of maps, and you have a way to convert them to Apartment and Flat objects
+      // This part is complex and depends on your data structure.
+      // For now, let's just print them.
+      print(properties);
+    } catch (e) {
+      debugPrint('Error fetching flats: $e');
+    }
+  }
 
   Future<void> toggleElectricity(String flatId, bool isActive) async {
     try {
