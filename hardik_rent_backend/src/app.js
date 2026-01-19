@@ -12,24 +12,35 @@ const admin = require('firebase-admin'); // Add firebase-admin
 const app = express();
 
 // Initialize Firebase Admin SDK
-if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY === 'your_firebase_service_account_json_here') {
-        console.error('FIREBASE_SERVICE_ACCOUNT_KEY contains placeholder value. Please replace with actual Firebase service account JSON.');
-        process.exit(1); // Exit if Firebase is not configured correctly
-    }
-    try {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-        console.log('Firebase Admin SDK initialized successfully from environment variable.');
-    } catch (error) {
-        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', error);
-        process.exit(1); // Exit if Firebase cannot be initialized
+let firebaseApp;
+try {
+    firebaseApp = admin.app();
+} catch (e) {
+    // Default app not initialized, so initialize it
+}
+
+if (!firebaseApp) {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY === 'your_firebase_service_account_json_here') {
+            console.error('FIREBASE_SERVICE_ACCOUNT_KEY contains placeholder value. Please replace with actual Firebase service account JSON.');
+            process.exit(1); // Exit if Firebase is not configured correctly
+        }
+        try {
+            const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount)
+            });
+            console.log('Firebase Admin SDK initialized successfully from environment variable.');
+        } catch (error) {
+            console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY or initialize Firebase:', error);
+            process.exit(1); // Exit if Firebase cannot be initialized
+        }
+    } else {
+        console.error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set. Firebase Admin SDK not initialized.');
+        process.exit(1); // Exit if Firebase is not configured
     }
 } else {
-    console.error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set. Firebase Admin SDK not initialized.');
-    process.exit(1); // Exit if Firebase is not configured
+    console.log('Firebase Admin SDK already initialized.'); // Log if already initialized
 }
 
 // Middleware
