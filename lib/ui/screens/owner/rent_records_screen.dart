@@ -17,11 +17,13 @@ class RentRecordsScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('Rent Ledger'),
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF4338CA)],
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text('Rent Ledger'),
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF4338CA)],
+                  ),
                 ),
               ),
             ),

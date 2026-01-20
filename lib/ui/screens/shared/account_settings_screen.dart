@@ -68,11 +68,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: const Text('Account Settings'),
-            background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.primaryColor.withAlpha(200)],
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text('Account Settings'),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.primaryColor, AppTheme.primaryColor.withAlpha(200)],
+                  ),
                 ),
               ),
             ),

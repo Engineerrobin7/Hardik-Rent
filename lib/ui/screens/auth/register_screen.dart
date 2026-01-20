@@ -42,7 +42,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushReplacementNamed(context, '/tenant-dashboard');
       }
     }
-    }
   }
 
   void _handleGoogleLogin() async {

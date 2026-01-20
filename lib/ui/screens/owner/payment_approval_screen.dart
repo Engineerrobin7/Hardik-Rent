@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
+import '../../theme/app_theme.dart';
 
 class PaymentApprovalScreen extends StatelessWidget {
   const PaymentApprovalScreen({super.key});
@@ -123,7 +124,7 @@ class PaymentApprovalScreen extends StatelessWidget {
                 ),
                 Text(
                   '₹${payment.amount.toInt()}',
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: AppTheme.primaryColor),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: AppTheme.primaryColor),
                 ),
               ],
             ),

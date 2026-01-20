@@ -6,6 +6,7 @@ import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
 import '../../theme/app_theme.dart';
 import '../../../services/firebase_service.dart';
+import '../../../services/api_service.dart';
 
 class AddTenantScreen extends StatefulWidget {
   const AddTenantScreen({super.key});
