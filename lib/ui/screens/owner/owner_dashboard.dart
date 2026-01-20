@@ -374,6 +374,7 @@ class _OwnerVisualBuildingMap extends StatelessWidget {
       ),
     );
   }
+}
 
 class _StatMiniCard extends StatelessWidget {
   final String title;

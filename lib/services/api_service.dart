@@ -239,4 +239,39 @@ class ApiService {
       return null;
     }
   }
+
+  // Identity Verification (Aadhaar KYC)
+  // To use "Real" API, sign up at sandbox.co.in or surepass.io
+  static const String kycApiKey = 'YOUR_REAL_KYC_API_KEY'; 
+  
+  Future<bool> verifyAadhaarReal(String aadhaarNumber) async {
+    const providerUrl = 'https://api.sandbox.co.in/kyc/aadhaar/okyc/otp/request'; // Example Sandbox.co.in endpoint
+    
+    try {
+      final response = await http.post(
+        Uri.parse(providerUrl),
+        headers: {
+          'Authorization': kycApiKey,
+          'Content-Type': 'application/json',
+          'x-api-key': kycApiKey,
+          'x-api-version': '1.0'
+        },
+        body: json.encode({
+          'aadhaar_number': aadhaarNumber,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Successful API call logic
+        return data['status'] == 'success' || data['code'] == 200;
+      } else {
+        debugPrint('KYC API Error: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('KYC Connection Error: $e');
+      return false;
+    }
+  }
 }

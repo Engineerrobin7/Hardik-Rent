@@ -1,11 +1,7 @@
-// Sprint 2: Chat Screen UI
-// File: lib/ui/screens/shared/chat_screen.dart
-
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
-
 import 'package:intl/intl.dart';
 import '../../../data/models/chat_models.dart';
 import '../../../data/services/chat_service.dart';
@@ -121,8 +117,22 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.phone),
-            onPressed: () {
-              // TODO: Implement phone call
+            onPressed: () async {
+              final Uri telLaunchUri = Uri(
+                scheme: 'tel',
+                path: '+919876543210', 
+              );
+              try {
+                if (await canLaunchUrl(telLaunchUri)) {
+                  await launchUrl(telLaunchUri);
+                }
+              } catch (e) {
+                if (mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Could not launch phone dialer')),
+                  );
+                }
+              }
             },
           ),
         ],

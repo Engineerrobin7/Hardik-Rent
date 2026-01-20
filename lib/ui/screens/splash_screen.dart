@@ -43,12 +43,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     // Navigator.pushReplacementNamed(context, '/owner-dashboard');
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (auth.isAuthenticated) {
-      Navigator.pushReplacementNamed(context, '/owner-dashboard');
-      // if (auth.currentUser?.role == UserRole.owner) {
-      //   Navigator.pushReplacementNamed(context, '/owner-dashboard');
-      // } else {
-      //   Navigator.pushReplacementNamed(context, '/tenant-dashboard');
-      // }
+      if (auth.currentUser?.role == UserRole.owner) {
+        Navigator.pushReplacementNamed(context, '/owner-dashboard');
+      } else {
+        Navigator.pushReplacementNamed(context, '/tenant-dashboard');
+      }
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }

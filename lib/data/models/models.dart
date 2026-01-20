@@ -148,6 +148,8 @@ class User {
   final double? securityDeposit;
   final String? idProofUrl;
   final String? agreementUrl;
+  final String? aadhaarNumber;
+  final String? photoUrl;
   final DateTime? joinedDate;
 
   User({
@@ -160,6 +162,8 @@ class User {
     this.securityDeposit,
     this.idProofUrl,
     this.agreementUrl,
+    this.aadhaarNumber,
+    this.photoUrl,
     this.joinedDate,
   });
 
@@ -174,6 +178,8 @@ class User {
       securityDeposit: (json['securityDeposit'] ?? 0.0).toDouble(),
       idProofUrl: json['idProofUrl'],
       agreementUrl: json['agreementUrl'],
+      aadhaarNumber: json['aadhaarNumber'],
+      photoUrl: json['photoUrl'],
       joinedDate: json['joinedDate'] != null ? DateTime.parse(json['joinedDate']) : null,
     );
   }
@@ -189,6 +195,8 @@ class User {
       'securityDeposit': securityDeposit,
       'idProofUrl': idProofUrl,
       'agreementUrl': agreementUrl,
+      'aadhaarNumber': aadhaarNumber,
+      'photoUrl': photoUrl,
       'joinedDate': joinedDate?.toIso8601String(),
     };
   }

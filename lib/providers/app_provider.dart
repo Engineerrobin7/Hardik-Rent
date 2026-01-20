@@ -4,6 +4,7 @@ import '../data/models/models.dart';
 import '../data/models/visual_booking_models.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
+import '../services/notification_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final FirebaseService _service = FirebaseService();
@@ -48,6 +49,7 @@ class AppProvider extends ChangeNotifier {
 
       _rentSub = _service.getRentRecords().listen((rentRecords) {
         _rentRecords = rentRecords;
+        _applyAutomatedPenalties(); // NEW: Calculate penalties on data refresh
         notifyListeners();
       });
 
@@ -55,11 +57,56 @@ class AppProvider extends ChangeNotifier {
         _payments = payments;
         notifyListeners();
       });
+
+      // Initialize Real-time services
+      await _initializeNotifications();
+      
     } catch (e) {
       debugPrint('Initialization Error: $e');
     } finally {
       _isDataLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _initializeNotifications() async {
+    final notificationService = PushNotificationService();
+    await notificationService.initialize();
+  }
+
+  /// NEW: Process penalties for late payments automatically
+  Future<void> _applyAutomatedPenalties() async {
+    final now = DateTime.now();
+    for (var record in _rentRecords) {
+      if (record.status != RentStatus.paid && now.isAfter(record.dueDate)) {
+        // Calculate days late
+        final daysLate = now.difference(record.dueDate).inDays;
+        if (daysLate > 0) {
+          // Find property to get penalty rate
+          final flat = _flats.firstWhere((f) => f.id == record.flatId, orElse: () => _flats.first);
+          // For demo, we assume 100/day if property not found or rate is 0
+          const defaultPenaltyRate = 100.0; 
+          final newPenalty = daysLate * defaultPenaltyRate;
+          
+          if (newPenalty > record.penaltyApplied) {
+            final updatedRecord = RentRecord(
+              id: record.id,
+              flatId: record.flatId,
+              tenantId: record.tenantId,
+              month: record.month,
+              baseRent: record.baseRent,
+              electricityCharges: record.electricityCharges,
+              penaltyApplied: newPenalty.toDouble(),
+              amountPaid: record.amountPaid,
+              generatedDate: record.generatedDate,
+              dueDate: record.dueDate,
+              status: RentStatus.overdue,
+              flag: RentFlag.red,
+            );
+            await _service.updateRentRecord(updatedRecord);
+          }
+        }
+      }
     }
   }
 

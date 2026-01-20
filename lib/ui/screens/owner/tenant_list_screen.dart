@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../providers/app_provider.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../data/models/models.dart';
+import '../../theme/app_theme.dart';
+import '../shared/chat_screen.dart';
 import 'add_tenant_screen.dart';
 
 class TenantListScreen extends StatelessWidget {
@@ -183,6 +187,42 @@ class TenantListScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppTheme.secondaryColor),
+                    onPressed: () {
+                      final auth = Provider.of<AuthProvider>(context, listen: false);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            chatRoomId: 'chat_${auth.currentUser!.id}_${tenant.id}',
+                            currentUserId: auth.currentUser!.id,
+                            currentUserName: auth.currentUser!.name,
+                            otherUserId: tenant.id,
+                            otherUserName: tenant.name,
+                            propertyAddress: flat.flatNumber != 'N/A' ? 'Flat ${flat.flatNumber}' : 'Property',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.phone_outlined, color: Colors.green),
+                    onPressed: () async {
+                       final Uri telLaunchUri = Uri(
+                        scheme: 'tel',
+                        path: tenant.phoneNumber ?? '',
+                      );
+                      if (await canLaunchUrl(telLaunchUri)) {
+                        await launchUrl(telLaunchUri);
+                      }
+                    },
+                  ),
+                ],
               ),
               Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
             ],

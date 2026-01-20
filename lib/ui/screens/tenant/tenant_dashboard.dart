@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import 'flat_availability_screen.dart';
 import 'payment_submission_screen.dart';
 import '../shared/profile_screen.dart';
+import '../shared/chat_screen.dart';
 import 'visual_booking_screen.dart';
 
 class TenantDashboard extends StatefulWidget {
@@ -121,6 +122,8 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
                           return _HistoryTile(record: tenantRentRecords[index]);
                         },
                       ),
+                      const SizedBox(height: 24),
+                      _buildChatTile(context, auth),
                   ],
                 ),
               ),
@@ -296,6 +299,42 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
           ),
         );
       },
+    );
+  }
+
+  Widget _buildChatTile(BuildContext context, AuthProvider auth) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withAlpha(12),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(25)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(color: AppTheme.primaryColor, shape: BoxShape.circle),
+          child: const Icon(Icons.support_agent_rounded, color: Colors.white),
+        ),
+        title: const Text('Chat with Owner', style: TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: const Text('Need help or have questions?'),
+        trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.primaryColor),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatScreen(
+                chatRoomId: 'chat_owner_${auth.currentUser!.id}',
+                currentUserId: auth.currentUser!.id,
+                currentUserName: auth.currentUser!.name,
+                otherUserId: 'owner_id_static', // In a real app, this would be the owner ID from the flat details
+                otherUserName: 'Property Owner',
+                propertyAddress: 'Management Office',
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
