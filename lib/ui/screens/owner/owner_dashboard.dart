@@ -9,6 +9,7 @@ import '../owner/flat_list_screen.dart';
 import '../owner/tenant_list_screen.dart';
 import 'payment_approval_screen.dart';
 import 'rent_records_screen.dart';
+import 'electricity_hub_screen.dart';
 import '../shared/profile_screen.dart';
 
 class OwnerDashboard extends StatefulWidget {
@@ -153,6 +154,42 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
                     SliverToBoxAdapter(
                       child: _buildMainStatCard(totalCollection),
                     ),
+
+                    // NEW: Real-time Visual Map for Owner
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Live Property Map',
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () => app.fetchFlats(),
+                                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                                  label: const Text('SYNC'),
+                                )
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            if (app.apartments.isEmpty)
+                               Container(
+                                 height: 100,
+                                 decoration: GlassDecoration.decoration,
+                                 child: const Center(child: Text('Add an apartment building to see live status')),
+                               )
+                            else
+                               _OwnerVisualBuildingMap(apartmentId: app.apartments.first.id),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                       sliver: SliverGrid(
@@ -207,6 +244,12 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
                               icon: Icons.domain_add_rounded,
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FlatListScreen())),
                             ),
+                             _InteractiveActionTile(
+                              title: 'Electricity Hub',
+                              subtitle: 'Board-Level Bill Fetching & Controls',
+                              icon: Icons.electric_bolt_rounded,
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ElectricityHubScreen())),
+                            ),
                             _InteractiveActionTile(
                               title: 'Tenant Directory',
                               subtitle: 'Active member profiles',
@@ -218,12 +261,6 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
                               subtitle: 'Verify transactions',
                               icon: Icons.verified_rounded,
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentApprovalScreen())),
-                            ),
-                            _InteractiveActionTile(
-                              title: 'Collection History',
-                              subtitle: 'Detailed revenue logs',
-                              icon: Icons.history_edu_rounded,
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RentRecordsScreen())),
                             ),
                           ],
                         ),
@@ -258,25 +295,9 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Monthly Collection',
-                style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'USD',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-              ),
-            ],
+          const Text(
+            'Monthly Collection',
+            style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           Text(
@@ -293,6 +314,66 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
     );
   }
 }
+
+class _OwnerVisualBuildingMap extends StatelessWidget {
+  final String apartmentId;
+  const _OwnerVisualBuildingMap({required this.apartmentId});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = Provider.of<AppProvider>(context);
+    final structure = app.getBuildingStructure(apartmentId);
+
+    if (structure == null) return const SizedBox.shrink();
+
+    return Container(
+      height: 180,
+      decoration: GlassDecoration.decoration,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: structure.floors.map((floor) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('FL ${floor.floorNumber}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: floor.flats.map((flat) {
+                        bool isOccupied = flat.status == FlatStatus.occupied;
+                        return Container(
+                          width: 28,
+                          height: 28,
+                          margin: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: isOccupied ? Colors.red.withAlpha(51) : Colors.green.withAlpha(51),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: isOccupied ? Colors.red : Colors.green, width: 1),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              isOccupied ? Icons.person : Icons.meeting_room_outlined,
+                              size: 14,
+                              color: isOccupied ? Colors.red : Colors.green,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
 
 class _StatMiniCard extends StatelessWidget {
   final String title;

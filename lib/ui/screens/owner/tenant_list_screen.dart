@@ -7,109 +7,187 @@ import 'add_tenant_screen.dart';
 class TenantListScreen extends StatelessWidget {
   const TenantListScreen({super.key});
 
-  Widget _buildTenantItem(BuildContext context, User tenant, Flat flat, AppProvider app) {
-    // Determine flag based on latest rent record
-    final rents = app.rentRecords.where((r) => r.tenantId == tenant.id).toList();
-    rents.sort((a, b) => b.dueDate.compareTo(a.dueDate));
-    
-    RentFlag flag = RentFlag.green; // Default to green if no history
-    if (rents.isNotEmpty) {
-      flag = rents.first.flag;
-    }
-
-    Color flagColor;
-    switch (flag) {
-      case RentFlag.green: flagColor = Colors.green; break;
-      case RentFlag.yellow: flagColor = Colors.orange; break;
-      case RentFlag.red: flagColor = Colors.red; break;
-    }
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: flagColor.withAlpha(76), width: 1),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: flagColor, width: 2),
-          ),
-          child: CircleAvatar(
-            backgroundColor: flagColor.withAlpha(25),
-            child: Text(
-              tenant.name[0], 
-              style: TextStyle(color: flagColor, fontWeight: FontWeight.bold)
-            ),
-          ),
-        ),
-        title: Text(tenant.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text('Flat: ${flat.flatNumber} | ${tenant.phoneNumber ?? "No phone"}'),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: flagColor.withAlpha(25),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                flag == RentFlag.green ? 'ALL CLEARED' : (flag == RentFlag.yellow ? 'DUE SOON' : 'OVERDUE'),
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: flagColor),
-              ),
-            ),
-          ],
-        ),
-        trailing: const Icon(Icons.chevron_right_rounded),
-        onTap: () {
-          // View tenant details
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final app = Provider.of<AppProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tenants'),
-      ),
-      body: app.tenants.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.people_outline, size: 64, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  const Text('No tenants added yet', style: TextStyle(color: Colors.grey)),
-                ],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar.large(
+            expandedHeight: 180,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text('Tenant Directory'),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.secondaryColor.withAlpha(200), AppTheme.secondaryColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Opacity(
+                  opacity: 0.1,
+                  child: Icon(Icons.people_alt_rounded, size: 200, color: Colors.white),
+                ),
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: app.tenants.length,
-              itemBuilder: (context, index) {
-                final tenant = app.tenants[index];
-                final flat = app.flats.firstWhere((f) => f.currentTenantId == tenant.id, orElse: () => Flat(id: '', apartmentId: '', flatNumber: 'N/A', floor: 0, monthlyRent: 0));
-                return _buildTenantItem(context, tenant, flat, app);
-              },
             ),
-      floatingActionButton: FloatingActionButton(
+          ),
+          if (app.isDataLoading)
+            const SliverToBoxAdapter(
+              child: LinearProgressIndicator(minHeight: 2),
+            ),
+          app.tenants.isEmpty
+              ? SliverFillRemaining(child: _buildEmptyState())
+              : SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final tenant = app.tenants[index];
+                        final flat = app.flats.firstWhere(
+                          (f) => f.currentTenantId == tenant.id,
+                          orElse: () => Flat(id: '', apartmentId: '', flatNumber: 'N/A', floor: 0, monthlyRent: 0),
+                        );
+                        return _buildTenantCard(context, tenant, flat, app);
+                      },
+                      childCount: app.tenants.length,
+                    ),
+                  ),
+                ),
+           const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddTenantScreen()),
           );
         },
-        child: const Icon(Icons.person_add),
+        icon: const Icon(Icons.person_add_rounded),
+        label: const Text('Add Tenant'),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(color: AppTheme.secondaryColor.withAlpha(12), shape: BoxShape.circle),
+            child: Icon(Icons.group_off_rounded, size: 80, color: AppTheme.secondaryColor.withAlpha(76)),
+          ),
+          const SizedBox(height: 24),
+          const Text('No Tenants Found', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text('Active member profiles will appear here', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTenantCard(BuildContext context, User tenant, Flat flat, AppProvider app) {
+    // Determine flag based on latest rent record
+    final rents = app.rentRecords.where((r) => r.tenantId == tenant.id).toList();
+    rents.sort((a, b) => b.dueDate.compareTo(a.dueDate));
+    
+    RentFlag flag = RentFlag.green;
+    if (rents.isNotEmpty) {
+      flag = rents.first.flag;
+    }
+
+    Color flagColor;
+    String statusText;
+    switch (flag) {
+      case RentFlag.green: 
+        flagColor = Colors.green; 
+        statusText = 'ALL CLEARED';
+        break;
+      case RentFlag.yellow: 
+        flagColor = Colors.orange; 
+        statusText = 'DUE SOON';
+        break;
+      case RentFlag.red: 
+        flagColor = Colors.red; 
+        statusText = 'OVERDUE';
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.grey.shade100, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(6),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
+      ),
+      child: InkWell(
+        onTap: () {}, // View Details
+        borderRadius: BorderRadius.circular(30),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [flagColor.withAlpha(30), flagColor.withAlpha(51)],
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: flagColor, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    tenant.name[0].toUpperCase(),
+                    style: TextStyle(color: flagColor, fontWeight: FontWeight.w900, fontSize: 24),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tenant.name,
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                    ),
+                    const SizedBox(height: 4),
+                     Text(
+                      'Flat ${flat.flatNumber} • ${tenant.phoneNumber ?? 'No Contact'}',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: flagColor.withAlpha(25),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: flagColor, letterSpacing: 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300),
+            ],
+          ),
+        ),
       ),
     );
   }

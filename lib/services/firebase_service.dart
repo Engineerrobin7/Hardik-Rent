@@ -117,6 +117,10 @@ class FirebaseService {
     return null;
   }
 
+  Future<void> updateUser(User user) async {
+    await _db.collection('users').doc(user.id).update(user.toJson()..remove('id'));
+  }
+
   // --- Firestore: Rent Records ---
   Stream<List<RentRecord>> getRentRecords() {
     return _db.collection('rent_records').snapshots().map((snapshot) {

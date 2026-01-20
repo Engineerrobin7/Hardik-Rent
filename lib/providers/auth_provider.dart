@@ -95,4 +95,30 @@ class AuthProvider with ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<void> updateProfile({required String name, required String phoneNumber}) async {
+    if (_currentUser == null) return;
+    
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final updatedUser = User(
+        id: _currentUser!.id,
+        name: name,
+        email: _currentUser!.email,
+        role: _currentUser!.role,
+        phoneNumber: phoneNumber,
+      );
+
+      await _service.updateUser(updatedUser);
+      _currentUser = updatedUser;
+    } catch (e) {
+      debugPrint('Update Profile Error: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

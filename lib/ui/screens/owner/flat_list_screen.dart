@@ -13,42 +13,77 @@ class FlatListScreen extends StatelessWidget {
     final app = Provider.of<AppProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flat Inventory'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => app.fetchFlats(),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          if (app.isDataLoading)
-            const LinearProgressIndicator(minHeight: 2),
-          Expanded(
-            child: app.flats.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    itemCount: app.flats.length,
-                    itemBuilder: (context, index) {
-                      final flat = app.flats[index];
-                      final apartment = app.apartments.firstWhere(
-                        (a) => a.id == flat.apartmentId,
-                        orElse: () => Apartment(id: '', name: 'Standard Property', address: '', ownerId: ''),
-                      );
-                      return _FlatCard(flat: flat, apartmentName: apartment.name);
-                    },
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar.large(
+            expandedHeight: 180,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text('Flat Inventory'),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.primaryColor.withAlpha(200), AppTheme.primaryColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                ),
+                child: Opacity(
+                  opacity: 0.1,
+                  child: Icon(Icons.apartment_rounded, size: 200, color: Colors.white),
+                ),
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded),
+                onPressed: () => app.fetchFlats(),
+              ),
+            ],
           ),
+          if (app.isDataLoading)
+            const SliverToBoxAdapter(
+              child: LinearProgressIndicator(minHeight: 2),
+            ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+              child: Row(
+                children: [
+                  Icon(Icons.flash_on_rounded, color: Colors.amber, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Electricity Board Hub Active',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade600, letterSpacing: 0.5),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          app.flats.isEmpty
+              ? SliverFillRemaining(child: _buildEmptyState())
+              : SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final flat = app.flats[index];
+                        final apartment = app.apartments.firstWhere(
+                          (a) => a.id == flat.apartmentId,
+                          orElse: () => Apartment(id: '', name: 'Standard Property', address: '', ownerId: ''),
+                        );
+                        return _FlatCard(flat: flat, apartmentName: apartment.name);
+                      },
+                      childCount: app.flats.length,
+                    ),
+                  ),
+                ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditFlatScreen())),
-        backgroundColor: AppTheme.primaryColor,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('New Flat', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('New Flat'),
       ),
     );
   }
@@ -85,159 +120,203 @@ class _FlatCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 10, offset: const Offset(0, 5))],
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.grey.shade100, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(6),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
       ),
-      child: InkWell(
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddEditFlatScreen(flat: flat))),
-        borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddEditFlatScreen(flat: flat))),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'FLAT ${flat.flatNumber}',
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, letterSpacing: -0.5),
-                        ),
-                        Text(
-                          apartmentName,
-                          style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w600),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: (flat.isOccupied ? Colors.indigo : Colors.orange).withAlpha(25),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      flat.isOccupied ? 'OCCUPIED' : 'VACANT',
-                      style: TextStyle(
-                        color: flat.isOccupied ? Colors.indigo : Colors.orange,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Divider(height: 1),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _infoItem(Icons.layers_rounded, 'Floor ${flat.floor}'),
-                  _infoItem(Icons.payments_rounded, '₹${flat.monthlyRent.toInt()}'),
-                  const Icon(Icons.arrow_forward_rounded, size: 20, color: AppTheme.primaryColor),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (flat.isOccupied) ...[
-                const Divider(),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          flat.isElectricityActive ? Icons.flash_on_rounded : Icons.flash_off_rounded,
-                          color: flat.isElectricityActive ? Colors.amber : Colors.grey,
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
+                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              flat.isElectricityActive ? 'Power ON' : 'Power CUT',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: flat.isElectricityActive ? Colors.black87 : Colors.red,
-                              ),
+                              'Room ${flat.flatNumber}',
+                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.8),
                             ),
-                            InkWell(
-                              onTap: () async {
-                                final status = await Provider.of<AppProvider>(context, listen: false)
-                                    .checkElectricityStatus(flat.apartmentId, flat.id);
-                                if (!context.mounted) return;
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: const Text('Electricity Board Status'),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Consumer: ${status['billDetails']['consumerNumber']}'),
-                                        Text('Bill Amount: ₹${status['billDetails']['billAmount']}'),
-                                        Text('Status: ${status['billDetails']['status']}', 
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: status['billDetails']['status'] == 'PAID' ? Colors.green : Colors.red
-                                          ),
-                                        ),
-                                        Text('Due Date: ${status['billDetails']['dueDate'].toString().substring(0, 10)}'),
-                                      ],
-                                    ),
-                                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Verify Board Bill >',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: AppTheme.primaryColor,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
+                            Text(
+                              apartmentName,
+                              style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w600, fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
-                      ],
+                      ),
+                      _StatusChip(status: flat.isOccupied ? 'Occupied' : 'Vacant'),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _infoItem(Icons.grid_view_rounded, 'Floor ${flat.floor}'),
+                      _infoItem(Icons.currency_rupee_rounded, '${flat.monthlyRent.toInt()}/mo'),
+                    ],
+                  ),
+                  if (flat.isOccupied) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Divider(height: 1),
                     ),
-                    Switch(
-                      value: flat.isElectricityActive,
-                      activeThumbColor: Colors.amber,
-                      onChanged: (val) async {
-                        try {
-                          await Provider.of<AppProvider>(context, listen: false)
-                              .toggleElectricity(flat.apartmentId, flat.id, val);
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(e.toString().replaceAll('Exception: ', '')),
-                                backgroundColor: Colors.redAccent,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    ),
+                    _buildElectricityPanel(context),
                   ],
-                ),
-              ],
-            ],
+                ],
+              ),
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildElectricityPanel(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: flat.isElectricityActive ? Colors.amber.withAlpha(30) : Colors.grey.withAlpha(30),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              flat.isElectricityActive ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+              color: flat.isElectricityActive ? Colors.amber : Colors.grey,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  flat.isElectricityActive ? 'Power Active' : 'Disconnected',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: flat.isElectricityActive ? Colors.black87 : Colors.red),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    try {
+                       final status = await Provider.of<AppProvider>(context, listen: false)
+                        .checkElectricityStatus(flat.apartmentId, flat.id);
+                       if (!context.mounted) return;
+                       
+                       _showBoardDetail(context, status['billDetails']);
+                    } catch (e) {
+                      debugPrint('Board Fetch Error: $e');
+                    }
+                  },
+                  child: Text(
+                    'Fetch Board Details >',
+                    style: TextStyle(fontSize: 11, color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: flat.isElectricityActive,
+            activeColor: Colors.amber,
+            onChanged: (val) async {
+              try {
+                await Provider.of<AppProvider>(context, listen: false)
+                    .toggleElectricity(flat.apartmentId, flat.id, val);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                      backgroundColor: Colors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBoardDetail(BuildContext context, dynamic bill) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                const Icon(Icons.account_balance_rounded, color: AppTheme.primaryColor),
+                const SizedBox(width: 12),
+                const Text('State Electricity Board', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _billRow('Consumer Number', bill['consumerNumber']),
+            _billRow('Current Bill', '₹${bill['billAmount']}'),
+            _billRow('Status', bill['status'], color: bill['status'] == 'PAID' ? Colors.green : Colors.red),
+            _billRow('Due Date', bill['dueDate'].toString().substring(0, 10)),
+            const SizedBox(height: 32),
+            if (bill['status'] != 'PAID')
+               const Text('⚠️ Important: Tenant has unpaid dues with the board. Owner can cut off power to enforce policy.', 
+                 style: TextStyle(fontSize: 12, color: Colors.red, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('GOT IT')),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _billRow(String label, String value, {Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w900, color: color ?? Colors.black87)),
+        ],
       ),
     );
   }
@@ -245,10 +324,40 @@ class _FlatCard extends StatelessWidget {
   Widget _infoItem(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey.shade400),
-        const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.blueGrey)),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(color: AppTheme.primaryColor.withAlpha(15), borderRadius: BorderRadius.circular(8)),
+          child: Icon(icon, size: 14, color: AppTheme.primaryColor),
+        ),
+        const SizedBox(width: 10),
+        Text(text, style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.blueGrey, fontSize: 13)),
       ],
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final String status;
+  const _StatusChip({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final isOccupied = status == 'Occupied';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isOccupied ? Colors.indigo.withAlpha(25) : Colors.orange.withAlpha(25),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: isOccupied ? Colors.indigo : Colors.orange,
+          fontWeight: FontWeight.w900,
+          fontSize: 11,
+          letterSpacing: 1,
+        ),
+      ),
     );
   }
 }
