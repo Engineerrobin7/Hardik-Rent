@@ -1,15 +1,17 @@
 const { auth, admin } = require('../config/firebaseAdmin');
 
 const verifyToken = async (req, res, next) => {
-    // DEVELOPMENT BYPASS: If Firebase is not initialized OR header X-Test-Mode is set
-    if (admin.apps.length === 0 || req.headers['x-test-mode'] === 'true') {
-        console.warn('⚠️  Auth Bypass: Using mock user for development');
-        req.user = {
-            uid: req.headers['x-test-uid'] || 'test-owner-id',
-            email: 'test@example.com',
-            role: 'owner'
-        };
-        return next();
+    // DEVELOPMENT BYPASS: Only in non-production environments
+    if (process.env.NODE_ENV !== 'production') {
+        if (admin.apps.length === 0 || req.headers['x-test-mode'] === 'true') {
+            console.warn('⚠️  Auth Bypass: Using mock user for development');
+            req.user = {
+                uid: req.headers['x-test-uid'] || 'test-owner-id',
+                email: 'test@example.com',
+                role: 'owner'
+            };
+            return next();
+        }
     }
 
     const authHeader = req.headers.authorization;

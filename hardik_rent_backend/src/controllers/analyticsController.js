@@ -1,44 +1,50 @@
-const db = require('../config/db');
+const { db } = require('../config/firebaseAdmin');
 
 exports.getFinancialSummary = async (req, res) => {
     try {
         const ownerId = req.user.uid;
 
-        // 1. Total Potential Revenue (Sum of rent_amount for all occupied units)
-        const [revenueRows] = await db.query(`
-            SELECT SUM(rent_amount) as totalRevenue 
-            FROM units 
-            JOIN properties ON units.property_id = properties.id 
-            WHERE properties.owner_id = ? AND units.status = 'occupied'
-        `, [ownerId]);
+        // 1. Fetch all properties owned by this user
+        const propertiesSnapshot = await db.collection('properties').where('ownerId', '==', ownerId).get();
 
-        // 2. Occupancy Rate
-        const [occupancyRows] = await db.query(`
-            SELECT 
-                COUNT(*) as totalUnits,
-                SUM(CASE WHEN status = 'occupied' THEN 1 ELSE 0 END) as occupiedUnits
-            FROM units 
-            JOIN properties ON units.property_id = properties.id 
-            WHERE properties.owner_id = ?
-        `, [ownerId]);
+        let totalRevenue = 0;
+        let totalUnits = 0;
+        let occupiedUnits = 0;
+        let pendingRent = 0;
 
-        const totalUnits = occupancyRows[0].totalUnits || 0;
-        const occupiedUnits = occupancyRows[0].occupiedUnits || 0;
+        // 2. Iterate through each property and its units
+        for (const propertyDoc of propertiesSnapshot.docs) {
+            const propertyId = propertyDoc.id;
+            const unitsSnapshot = await db.collection('properties').doc(propertyId).collection('units').get();
+
+            unitsSnapshot.forEach(unitDoc => {
+                const unit = unitDoc.data();
+                totalUnits++;
+
+                if (unit.status === 'occupied') {
+                    occupiedUnits++;
+                    totalRevenue += Number(unit.rent) || 0;
+                }
+            });
+        }
+
+        // 3. Pending Rent Calculation
+        // In this Firestore schema, pending rent would ideally be in a 'payments' collection
+        const paymentsSnapshot = await db.collection('payments')
+            .where('ownerId', '==', ownerId)
+            .where('status', '==', 'pending')
+            .get();
+
+        paymentsSnapshot.forEach(paymentDoc => {
+            pendingRent += Number(paymentDoc.data().amount) || 0;
+        });
+
         const occupancyRate = totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0;
 
-        // 3. Pending Rent (from payments table)
-        const [pendingRows] = await db.query(`
-            SELECT SUM(amount) as pendingAmount 
-            FROM payments 
-            JOIN units ON payments.unit_id = units.id
-            JOIN properties ON units.property_id = properties.id 
-            WHERE properties.owner_id = ? AND payments.status = 'pending'
-        `, [ownerId]);
-
         res.status(200).json({
-            totalRevenue: revenueRows[0].totalRevenue || 0,
+            totalRevenue,
             occupancyRate: occupancyRate.toFixed(2),
-            pendingRent: pendingRows[0].pendingAmount || 0,
+            pendingRent,
             stats: {
                 totalUnits,
                 occupiedUnits,
@@ -46,6 +52,7 @@ exports.getFinancialSummary = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Analytics Error:', error);
         res.status(500).json({ error: error.message });
     }
 };
