@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../data/models/models.dart';
 import '../data/models/maintenance_models.dart';
+import 'package:flutter/foundation.dart';
 
 class FirebaseService {
   final auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
@@ -52,6 +54,56 @@ class FirebaseService {
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Google Sign In
+  Future<auth.User?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return null;
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final auth.AuthCredential credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final auth.UserCredential userCredential = await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (e) {
+      debugPrint('Google Sign In Error: $e');
+      rethrow;
+    }
+  }
+
+  // Phone Authentication
+  Future<void> verifyPhone({
+    required String phoneNumber,
+    required Function(String verificationId, int? resendToken) onCodeSent,
+    required Function(auth.FirebaseAuthException e) onVerificationFailed,
+    required Function(auth.PhoneAuthCredential credential) onVerificationCompleted,
+  }) async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      verificationCompleted: onVerificationCompleted,
+      verificationFailed: onVerificationFailed,
+      codeSent: onCodeSent,
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
+  }
+
+  Future<auth.User?> signInWithPhoneNumber(String verificationId, String smsCode) async {
+    try {
+      final auth.AuthCredential credential = auth.PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+      final auth.UserCredential userCredential = await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (e) {
+      debugPrint('Phone Sign In Error: $e');
       rethrow;
     }
   }

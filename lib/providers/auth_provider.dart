@@ -100,6 +100,98 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final authUser = await _service.signInWithGoogle();
+      if (authUser != null) {
+        final userData = await _service.getUser(authUser.uid);
+        if (userData == null) {
+          // New Google User: Create default profile as Tenant
+          final newUser = User(
+            id: authUser.uid,
+            name: authUser.displayName ?? 'Google User',
+            email: authUser.email ?? '',
+            role: UserRole.tenant, // Default to tenant
+            photoUrl: authUser.photoURL,
+          );
+          await _service.addTenant(newUser);
+          _currentUser = newUser;
+        } else {
+          _currentUser = userData;
+        }
+        _startUserListener(authUser.uid);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Google Login Error: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
+  // Phone Auth
+  Future<void> verifyPhone({
+    required String phoneNumber,
+    required Function(String verificationId) onCodeSent,
+    required Function(String error) onError,
+  }) async {
+    await _service.verifyPhone(
+      phoneNumber: phoneNumber,
+      onCodeSent: (verificationId, _) => onCodeSent(verificationId),
+      onVerificationFailed: (e) => onError(e.message ?? 'Verification failed'),
+      onVerificationCompleted: (credential) async {
+        // Auto-signin if possible (Android only)
+        // This is complex to handle through provider, usually we just wait for sms code
+      },
+    );
+  }
+
+  Future<bool> signInWithPhoneNumber(String verificationId, String smsCode) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final authUser = await _service.signInWithPhoneNumber(verificationId, smsCode);
+      if (authUser != null) {
+        final userData = await _service.getUser(authUser.uid);
+        if (userData == null) {
+           final newUser = User(
+            id: authUser.uid,
+            name: 'User ${phoneNumberMask(authUser.phoneNumber)}',
+            email: '',
+            role: UserRole.tenant,
+          );
+          await _service.addTenant(newUser);
+          _currentUser = newUser;
+        } else {
+          _currentUser = userData;
+        }
+        _startUserListener(authUser.uid);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Phone Auth Error: $e');
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
+  String phoneNumberMask(String? phone) {
+    if (phone == null || phone.length < 4) return 'New';
+    return phone.substring(phone.length - 4);
+  }
+
   Future<void> updateProfile({required String name, required String phoneNumber}) async {
     if (_currentUser == null) return;
     
@@ -113,6 +205,7 @@ class AuthProvider with ChangeNotifier {
         email: _currentUser!.email,
         role: _currentUser!.role,
         phoneNumber: phoneNumber,
+        photoUrl: _currentUser!.photoUrl,
       );
 
       await _service.updateUser(updatedUser);

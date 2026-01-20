@@ -4,6 +4,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../data/models/models.dart';
 import '../../theme/app_theme.dart';
 import 'register_screen.dart';
+import 'phone_auth_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -81,6 +82,23 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+  }
+
+  void _handleGoogleLogin() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final success = await auth.signInWithGoogle();
+
+    if (success && mounted) {
+      if (auth.currentUser?.role == UserRole.owner) {
+        Navigator.pushReplacementNamed(context, '/owner-dashboard');
+      } else {
+        Navigator.pushReplacementNamed(context, '/tenant-dashboard');
+      }
+    }
+  }
+
+  void _handlePhoneLogin() {
+     Navigator.push(context, MaterialPageRoute(builder: (_) => const PhoneAuthScreen()));
   }
 
   @override
@@ -202,6 +220,31 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 32),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey.shade300)),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Text('OR', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey.shade300)),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    _SocialLoginButton(
+                      title: 'Continue with Google',
+                      icon: 'https://cdn-icons-png.flaticon.com/512/2991/2991148.png', // Google Icon
+                      onTap: _handleGoogleLogin,
+                      isNetworkImage: true,
+                    ),
+                    const SizedBox(height: 16),
+                    _SocialLoginButton(
+                      title: 'Login with Phone',
+                      icon: 'https://cdn-icons-png.flaticon.com/512/597/597177.png', // Phone Icon
+                      onTap: _handlePhoneLogin,
+                      isNetworkImage: true,
+                    ),
                     const SizedBox(height: 40),
                     // _buildDemoAccountBox(),
                   ],
@@ -209,6 +252,51 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SocialLoginButton extends StatelessWidget {
+  final String title;
+  final String icon;
+  final VoidCallback onTap;
+  final bool isNetworkImage;
+
+  const _SocialLoginButton({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+    this.isNetworkImage = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade200, width: 2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            isNetworkImage 
+              ? Image.network(icon, height: 24, width: 24)
+              : Icon(Icons.phone_android, color: Colors.grey.shade700),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
