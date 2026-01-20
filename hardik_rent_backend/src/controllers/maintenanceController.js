@@ -3,50 +3,51 @@ const { v4: uuidv4 } = require('uuid');
 
 exports.createTicket = async (req, res) => {
     try {
-        const { title, description, priority, unitId, photoUrl, tenantId } = req.body;
-        // The actual ticket creation in Firestore will be handled by the Flutter app.
-        // This backend endpoint's primary role is to send notifications.
+        const { title, description, priority, unitId, propertyId, photoUrl } = req.body;
+        const tenantId = req.user.uid;
 
-        // TODO: Fetch owner's FCM token from Firestore based on unitId
-        // This will require querying Firestore for property -> owner -> owner's FCM token.
-        let ownerFcmToken = null; // Placeholder for FCM token
-
-        // Example Firestore query to get owner's FCM token:
-        // Assuming 'maintenance_requests' collection where each request has a 'unitId'.
-        // And 'units' collection where each unit has a 'propertyId'.
-        // And 'properties' collection where each property has an 'ownerId'.
-        // And 'users' collection where each user has an 'fcmToken'.
-        //
-        // This is a simplified example and might need adjustment based on actual Firestore structure.
-        //
-        // const unitDoc = await db.collection('units').doc(unitId).get();
-        // if (unitDoc.exists && unitDoc.data().propertyId) {
-        //     const propertyDoc = await db.collection('properties').doc(unitDoc.data().propertyId).get();
-        //     if (propertyDoc.exists && propertyDoc.data().ownerId) {
-        //         const ownerDoc = await db.collection('users').doc(propertyDoc.data().ownerId).get();
-        //         if (ownerDoc.exists && ownerDoc.data().fcmToken) {
-        //             ownerFcmToken = ownerDoc.data().fcmToken;
-        //         }
-        //     }
-        // }
-
-
-        if (ownerFcmToken) {
-            const message = {
-                notification: {
-                    title: 'New Maintenance Request',
-                    body: `New request for unit ${unitId}: ${title}`
-                },
-                token: ownerFcmToken
-            };
-            try {
-                await messaging.send(message);
-            } catch (err) {
-                console.warn('FCM delivery failed:', err.message);
-            }
+        if (!title || !unitId || !propertyId) {
+            return res.status(400).json({ error: 'Missing required fields: title, unitId, propertyId' });
         }
 
-        res.status(201).json({ message: 'Notification triggered for new ticket' });
+        const ticketId = uuidv4();
+        const ticketData = {
+            id: ticketId,
+            title,
+            description: description || '',
+            priority: priority || 'medium',
+            unitId,
+            propertyId,
+            tenantId,
+            photoUrl: photoUrl || null,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        await db.collection('maintenance_tickets').doc(ticketId).set(ticketData);
+
+        // Fetch owner's FCM token to notify them
+        try {
+            const propertyDoc = await db.collection('properties').doc(propertyId).get();
+            if (propertyDoc.exists) {
+                const ownerId = propertyDoc.data().ownerId;
+                const ownerDoc = await db.collection('users').doc(ownerId).get();
+                if (ownerDoc.exists && ownerDoc.data().fcmToken) {
+                    await messaging.send({
+                        notification: {
+                            title: '🛠️ New Maintenance Request',
+                            body: `Unit ${unitId}: ${title}`
+                        },
+                        token: ownerDoc.data().fcmToken
+                    });
+                }
+            }
+        } catch (fcmErr) {
+            console.warn('FCM Notification error:', fcmErr.message);
+        }
+
+        res.status(201).json({ message: 'Ticket created successfully', ticketId });
     } catch (error) {
         console.error('Create Ticket Error:', error);
         res.status(500).json({ error: error.message });
@@ -55,43 +56,43 @@ exports.createTicket = async (req, res) => {
 
 exports.updateTicketStatus = async (req, res) => {
     try {
-        const { ticketId, status, notes, cost } = req.body;
+        const { ticketId, status, notes } = req.body;
 
-        // The actual ticket status update in Firestore will be handled by the Flutter app.
-        // This backend endpoint's primary role is to send notifications.
-
-        // TODO: Fetch tenant's FCM token from Firestore based on ticketId
-        // This will require querying Firestore for maintenance request -> tenant -> tenant's FCM token.
-        let tenantFcmToken = null; // Placeholder for FCM token
-        let ticketTitle = "Maintenance Request"; // Placeholder for title
-
-        // Example Firestore query:
-        // const ticketDoc = await db.collection('maintenance_requests').doc(ticketId).get();
-        // if (ticketDoc.exists && ticketDoc.data().tenantId) {
-        //     ticketTitle = ticketDoc.data().title || ticketTitle;
-        //     const tenantId = ticketDoc.data().tenantId;
-        //     const tenantDoc = await db.collection('users').doc(tenantId).get();
-        //     if (tenantDoc.exists && tenantDoc.data().fcmToken) {
-        //         tenantFcmToken = tenantDoc.data().fcmToken;
-        //     }
-        // }
-
-        if (tenantFcmToken) {
-            const message = {
-                notification: {
-                    title: 'Maintenance Update',
-                    body: `Your request "${ticketTitle}" is now ${status}.`
-                },
-                token: tenantFcmToken
-            };
-            try {
-                await messaging.send(message);
-            } catch (err) {
-                console.warn('FCM delivery failed:', err.message);
-            }
+        if (!ticketId || !status) {
+            return res.status(400).json({ error: 'Ticket ID and status are required' });
         }
 
-        res.status(200).json({ message: 'Notification triggered for ticket status update' });
+        const ticketRef = db.collection('maintenance_tickets').doc(ticketId);
+        const ticketDoc = await ticketRef.get();
+
+        if (!ticketDoc.exists) {
+            return res.status(404).json({ error: 'Ticket not found' });
+        }
+
+        await ticketRef.update({
+            status,
+            notes: notes || '',
+            updatedAt: new Date().toISOString()
+        });
+
+        // Notify tenant
+        try {
+            const tenantId = ticketDoc.data().tenantId;
+            const tenantDoc = await db.collection('users').doc(tenantId).get();
+            if (tenantDoc.exists && tenantDoc.data().fcmToken) {
+                await messaging.send({
+                    notification: {
+                        title: '🔧 Maintenance Update',
+                        body: `Your request "${ticketDoc.data().title}" is now ${status}.`
+                    },
+                    token: tenantDoc.data().fcmToken
+                });
+            }
+        } catch (fcmErr) {
+            console.warn('FCM Notification error:', fcmErr.message);
+        }
+
+        res.status(200).json({ message: 'Ticket updated successfully' });
     } catch (error) {
         console.error('Update Ticket Status Error:', error);
         res.status(500).json({ error: error.message });
@@ -100,10 +101,14 @@ exports.updateTicketStatus = async (req, res) => {
 
 exports.getTenantTickets = async (req, res) => {
     try {
-        // Placeholder for fetching tenant-specific maintenance tickets
-        // In a real application, you would implement logic to query tickets
-        // based on the authenticated tenant's ID.
-        res.status(200).json({ message: 'This is a placeholder for getTenantTickets', tickets: [] });
+        const tenantId = req.user.uid;
+        const snapshot = await db.collection('maintenance_tickets')
+            .where('tenantId', '==', tenantId)
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        const tickets = snapshot.docs.map(doc => doc.data());
+        res.status(200).json(tickets);
     } catch (error) {
         console.error('Get Tenant Tickets Error:', error);
         res.status(500).json({ error: error.message });
@@ -112,10 +117,27 @@ exports.getTenantTickets = async (req, res) => {
 
 exports.getOwnerTickets = async (req, res) => {
     try {
-        // Placeholder for fetching owner-specific maintenance tickets
-        // In a real application, you would implement logic to query tickets
-        // based on the authenticated owner's ID.
-        res.status(200).json({ message: 'This is a placeholder for getOwnerTickets', tickets: [] });
+        const ownerId = req.user.uid;
+        // Owners see tickets for all properties they own
+        const propertiesSnapshot = await db.collection('properties')
+            .where('ownerId', '==', ownerId)
+            .get();
+
+        const propertyIds = propertiesSnapshot.docs.map(doc => doc.id);
+
+        if (propertyIds.length === 0) {
+            return res.status(200).json([]);
+        }
+
+        // Firestore 'in' query has a limit of 10 items, but for many owners this is enough.
+        // For larger scales, you'd store ownerId directly in the ticket.
+        const snapshot = await db.collection('maintenance_tickets')
+            .where('propertyId', 'in', propertyIds)
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        const tickets = snapshot.docs.map(doc => doc.data());
+        res.status(200).json(tickets);
     } catch (error) {
         console.error('Get Owner Tickets Error:', error);
         res.status(500).json({ error: error.message });

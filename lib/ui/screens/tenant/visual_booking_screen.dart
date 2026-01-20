@@ -86,12 +86,12 @@ class _VisualBookingScreenState extends State<VisualBookingScreen> {
               maxScale: 2.0,
               child: ListView.builder(
                 padding: const EdgeInsets.all(24),
-                itemCount: _building.floors.length,
+                itemCount: _building!.floors.length,
                 itemBuilder: (context, index) {
                   // Floors are usually listed bottom-up in real life, 
                   // but for booking apps top-down (Floor 5 -> 1) is often clearer.
                   // Let's do Top-Down (Floor 5 at top).
-                  final floor = _building.floors[_building.floors.length - 1 - index];
+                  final floor = _building!.floors[_building!.floors.length - 1 - index];
                   
                   return _buildFloorRow(floor);
                 },

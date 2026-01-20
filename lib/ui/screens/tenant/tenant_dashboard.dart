@@ -106,7 +106,7 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
                     const SizedBox(height: 32),
                     _buildPremiumRentCard(context, pendingRent),
                     const SizedBox(height: 24),
-                    _buildFlatAvailabilityCard(context),
+                    _buildFlatAvailabilityCard(context, app),
                     const SizedBox(height: 40),
                     const Text('Rent History', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 16),
@@ -227,7 +227,7 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
     );
   }
 
-  Widget _buildFlatAvailabilityCard(BuildContext context) {
+  Widget _buildFlatAvailabilityCard(BuildContext context, AppProvider app) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

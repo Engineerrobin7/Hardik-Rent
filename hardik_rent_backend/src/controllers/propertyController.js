@@ -136,3 +136,47 @@ exports.toggleElectricity = async (req, res) => {
         res.status(500).json({ error: 'Failed to toggle electricity status' });
     }
 };
+
+exports.getTenantProperty = async (req, res) => {
+    try {
+        const tenantId = req.user.uid;
+        // Search in users collection for their unit/property IDs
+        const userDoc = await db.collection('users').doc(tenantId).get();
+
+        if (!userDoc.exists || !userDoc.data().propertyId) {
+            return res.status(404).json({ error: 'No property assigned to this tenant' });
+        }
+
+        const { propertyId, unitId } = userDoc.data();
+
+        const propertyDoc = await db.collection('properties').doc(propertyId).get();
+        const unitDoc = await db.collection('properties').doc(propertyId).collection('units').doc(unitId).get();
+
+        res.status(200).json({
+            property: propertyDoc.data(),
+            unit: unitDoc.data()
+        });
+    } catch (error) {
+        console.error('Error fetching tenant property:', error);
+        res.status(500).json({ error: 'Failed to fetch tenant property' });
+    }
+};
+
+exports.getAllProperties = async (req, res) => {
+    try {
+        const snapshot = await db.collection('properties').get();
+        const properties = [];
+
+        for (const doc of snapshot.docs) {
+            const property = doc.data();
+            const unitsSnapshot = await db.collection('properties').doc(doc.id).collection('units').get();
+            property.units = unitsSnapshot.docs.map(unitDoc => unitDoc.data());
+            properties.push(property);
+        }
+
+        res.status(200).json(properties);
+    } catch (error) {
+        console.error('Error fetching all properties:', error);
+        res.status(500).json({ error: 'Failed to fetch properties' });
+    }
+};

@@ -1,8 +1,31 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../data/models/models.dart';
+import '../data/models/visual_booking_models.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
+
+class AppProvider extends ChangeNotifier {
+  final FirebaseService _service = FirebaseService();
+  final ApiService _apiService = ApiService();
+
+  List<Flat> _flats = [];
+  List<User> _tenants = [];
+  List<RentRecord> _rentRecords = [];
+  List<PaymentRecord> _payments = [];
+  List<Apartment> _apartments = [];
+
+  StreamSubscription? _flatsSub;
+  StreamSubscription? _tenantsSub;
+  StreamSubscription? _rentSub;
+  StreamSubscription? _paymentSub;
+  StreamSubscription? _apartmentsSub;
+
+  List<Flat> get flats => _flats;
+  List<User> get tenants => _tenants;
+  List<RentRecord> get rentRecords => _rentRecords;
+  List<PaymentRecord> get payments => _payments;
+  List<Apartment> get apartments => _apartments;
 
   bool _isDataLoading = false;
   bool get isDataLoading => _isDataLoading;
@@ -92,8 +115,12 @@ import '../services/firebase_service.dart';
       }
     } catch (e) {
       debugPrint('Error toggling electricity: $e');
-      rethrow;
+      rethrow; // Important: rethrow for UI handling (e.g. Snackbars with specific error messages)
     }
+  }
+
+  Future<Map<String, dynamic>> checkElectricityStatus(String propertyId, String unitId) async {
+    return await _apiService.getElectricityStatus(propertyId, unitId);
   }
 
 

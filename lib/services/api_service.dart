@@ -97,8 +97,8 @@ class ApiService {
   }
 
   Future<void> toggleElectricity(String propertyId, String unitId, bool enabled) async {
-    final response = await http.patch(
-      Uri.parse('$baseUrl/properties/toggle-electricity'),
+    final response = await http.post(
+      Uri.parse('$baseUrl/electricity/toggle'),
       headers: await _getHeaders(),
       body: json.encode({
         'propertyId': propertyId,
@@ -106,9 +106,23 @@ class ApiService {
         'enabled': enabled,
       }),
     );
+    
     if (response.statusCode != 200) {
-       throw Exception('Failed to toggle electricity: ${response.body}');
+      final errorData = json.decode(response.body);
+      throw Exception(errorData['message'] ?? errorData['error'] ?? 'Failed to toggle electricity');
     }
+  }
+
+  Future<Map<String, dynamic>> getElectricityStatus(String propertyId, String unitId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/electricity/status/$propertyId/$unitId'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    }
+    throw Exception('Failed to fetch electricity status');
   }
 
   // Analytics

@@ -115,6 +115,9 @@ const authRoutes = require('./routes/authRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const agreementRoutes = require('./routes/agreementRoutes');
+const rentRoutes = require('./routes/rentRoutes');
+const electricityRoutes = require('./routes/electricityRoutes');
+const extendedRoutes = require('./routes/extendedRoutes');
 
 app.use('/api/properties', verifyToken, propertyRoutes);
 app.use('/api/maintenance', verifyToken, maintenanceRoutes);
@@ -122,6 +125,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/analytics', verifyToken, analyticsRoutes);
 app.use('/api/payments', verifyToken, paymentRoutes);
 app.use('/api/agreements', verifyToken, agreementRoutes);
+app.use('/api/rent', verifyToken, rentRoutes);
+app.use('/api/electricity', verifyToken, electricityRoutes);
+app.use('/api/v2', verifyToken, extendedRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

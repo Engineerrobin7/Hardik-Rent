@@ -160,20 +160,76 @@ class _FlatCard extends StatelessWidget {
                           color: flat.isElectricityActive ? Colors.amber : Colors.grey,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          flat.isElectricityActive ? 'Power ON' : 'Power CUT',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: flat.isElectricityActive ? Colors.black87 : Colors.red,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              flat.isElectricityActive ? 'Power ON' : 'Power CUT',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: flat.isElectricityActive ? Colors.black87 : Colors.red,
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () async {
+                                final status = await Provider.of<AppProvider>(context, listen: false)
+                                    .checkElectricityStatus(flat.apartmentId, flat.id);
+                                if (!context.mounted) return;
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text('Electricity Board Status'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Consumer: ${status['billDetails']['consumerNumber']}'),
+                                        Text('Bill Amount: ₹${status['billDetails']['billAmount']}'),
+                                        Text('Status: ${status['billDetails']['status']}', 
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: status['billDetails']['status'] == 'PAID' ? Colors.green : Colors.red
+                                          ),
+                                        ),
+                                        Text('Due Date: ${status['billDetails']['dueDate'].toString().substring(0, 10)}'),
+                                      ],
+                                    ),
+                                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'Verify Board Bill >',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: AppTheme.primaryColor,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                     Switch(
                       value: flat.isElectricityActive,
                       activeThumbColor: Colors.amber,
-                      onChanged: (val) {
-                         Provider.of<AppProvider>(context, listen: false).toggleElectricity(flat.apartmentId, flat.id, val);
+                      onChanged: (val) async {
+                        try {
+                          await Provider.of<AppProvider>(context, listen: false)
+                              .toggleElectricity(flat.apartmentId, flat.id, val);
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(e.toString().replaceAll('Exception: ', '')),
+                                backgroundColor: Colors.redAccent,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            );
+                          }
+                        }
                       },
                     ),
                   ],

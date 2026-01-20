@@ -3,6 +3,8 @@ const router = express.Router();
 const propertyController = require('../controllers/propertyController');
 
 router.get('/', propertyController.getOwnerProperties);
+router.get('/all', propertyController.getAllProperties);
+router.get('/my-unit', propertyController.getTenantProperty);
 router.post('/', propertyController.createProperty);
 router.post('/unit', propertyController.createUnit);
 router.patch('/unit-status', propertyController.updateUnitStatus);
