@@ -42,67 +42,73 @@ class _VisualBookingScreenState extends State<VisualBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+    return Consumer<AppProvider>(
+      builder: (context, app, child) {
+        // Update local building data from provider if needed
+        final id = widget.apartmentId ?? (app.apartments.isNotEmpty ? app.apartments.first.id : null);
+        if (id != null) {
+          _building = app.getBuildingStructure(id);
+        }
 
-    if (_building == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Building View')),
-        body: const Center(child: Text('Building data not found. Please add flats first.')),
-      );
-    }
+        if (app.isDataLoading && _building == null) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
 
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text(_building!.name),
-        backgroundColor: Colors.blue[900], // Premium color
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // 1. Legend (Status Indicators)
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            color: Colors.white,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildLegendItem(FlatStatus.available),
-                _buildLegendItem(FlatStatus.occupied),
-                _buildLegendItem(FlatStatus.reserved),
-              ],
-            ),
+        if (_building == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Building View')),
+            body: const Center(child: Text('Building data not found. Please add flats first.')),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: Colors.grey[100],
+          appBar: AppBar(
+            title: Text(_building!.name),
+            backgroundColor: Colors.blue[900],
+            foregroundColor: Colors.white,
+            elevation: 0,
           ),
-          
-          const Divider(height: 1),
-
-          // 2. The Visual Grid (Flight Style)
-          Expanded(
-            child: InteractiveViewer( // Allows zooming and panning
-              minScale: 0.5,
-              maxScale: 2.0,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(24),
-                itemCount: _building!.floors.length,
-                itemBuilder: (context, index) {
-                  // Floors are usually listed bottom-up in real life, 
-                  // but for booking apps top-down (Floor 5 -> 1) is often clearer.
-                  // Let's do Top-Down (Floor 5 at top).
-                  final floor = _building!.floors[_building!.floors.length - 1 - index];
-                  
-                  return _buildFloorRow(floor);
-                },
+          body: Column(
+            children: [
+              // 1. Legend
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildLegendItem(FlatStatus.available),
+                    _buildLegendItem(FlatStatus.occupied),
+                    _buildLegendItem(FlatStatus.reserved),
+                  ],
+                ),
               ),
-            ),
+              const Divider(height: 1),
+
+              // 2. The Visual Grid
+              Expanded(
+                child: InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 2.0,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(24),
+                    itemCount: _building!.floors.length,
+                    itemBuilder: (context, index) {
+                      // Floors are usually listed bottom-up in real life, 
+                      // but for booking apps top-down (Floor 5 -> 1) is often clearer.
+                      // Let's do Top-Down (Floor 5 at top).
+                      final floor = _building!.floors[_building!.floors.length - 1 - index];
+                      return _buildFloorRow(floor);
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      
-      // 3. Selected Flat Details (Bottom Sheet style)
-      bottomNavigationBar: _selectedFlat != null ? _buildSelectionBar() : null,
+          bottomNavigationBar: _selectedFlat != null ? _buildSelectionBar() : null,
+        );
+      },
     );
   }
 

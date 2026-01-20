@@ -117,6 +117,15 @@ class FirebaseService {
     return null;
   }
 
+  Stream<User?> streamUser(String uid) {
+    return _db.collection('users').doc(uid).snapshots().map((doc) {
+      if (doc.exists) {
+        return User.fromJson({...doc.data()!, 'id': doc.id});
+      }
+      return null;
+    });
+  }
+
   Future<void> updateUser(User user) async {
     await _db.collection('users').doc(user.id).update(user.toJson()..remove('id'));
   }

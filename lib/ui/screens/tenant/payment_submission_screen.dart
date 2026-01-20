@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
 import '../../theme/app_theme.dart';
@@ -55,23 +56,30 @@ class _PaymentSubmissionScreenState extends State<PaymentSubmissionScreen> {
   }
 
   void _startRazorpay() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.currentUser;
+
     setState(() => _isProcessing = true);
     var options = {
-      'key': 'rzp_test_YOUR_KEY', // Place your key here
+      'key': 'rzp_test_YOUR_KEY', // TODO: Move to secure config
       'amount': (widget.rent.totalDue * 100).toInt(),
       'name': 'Hardik Rent',
       'description': 'Rent for ${widget.rent.month}',
       'timeout': 300,
       'prefill': {
-        'contact': '9876543210',
-        'email': 'tenant@hardikrent.com'
+        'contact': user?.phoneNumber ?? '',
+        'email': user?.email ?? ''
+      },
+      'notes': {
+        'rent_id': widget.rent.id,
+        'tenant_id': user?.id ?? ''
       }
     };
 
     try {
       _razorpay.open(options);
     } catch (e) {
-      debugPrint('Error: e');
+      debugPrint('Razorpay Error: $e');
       setState(() => _isProcessing = false);
     }
   }

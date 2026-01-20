@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/app_provider.dart';
 import '../../../data/models/models.dart';
+import '../../../data/models/visual_booking_models.dart';
 import '../../theme/app_theme.dart';
 import 'flat_availability_screen.dart';
 import 'payment_submission_screen.dart';
@@ -108,6 +109,15 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
                     _buildPremiumRentCard(context, pendingRent),
                     const SizedBox(height: 24),
                     _buildFlatAvailabilityCard(context, app),
+                    const SizedBox(height: 32),
+                    
+                    // NEW: Real-time Visual Map Preview for Tenant
+                    if (app.apartments.isNotEmpty) ...[
+                      const Text('Live Property Map', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 16),
+                      _TenantVisualMapPreview(apartmentId: app.apartments.first.id),
+                      const SizedBox(height: 24),
+                    ],
                     const SizedBox(height: 40),
                     const Text('Rent History', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 16),
@@ -334,6 +344,74 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _TenantVisualMapPreview extends StatelessWidget {
+  final String apartmentId;
+  const _TenantVisualMapPreview({required this.apartmentId});
+
+  @override
+  Widget build(BuildContext context) {
+    final app = Provider.of<AppProvider>(context);
+    final structure = app.getBuildingStructure(apartmentId);
+
+    if (structure == null) return const SizedBox.shrink();
+
+    return InkWell(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const VisualBookingScreen())),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 20)],
+        ),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: structure.floors.length,
+                itemBuilder: (context, floorIdx) {
+                  final floor = structure.floors[structure.floors.length - 1 - floorIdx]; // Show top floors first
+                  return Container(
+                    margin: const EdgeInsets.only(right: 12),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Text('F${floor.floorNumber}', style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        const Spacer(),
+                        Row(
+                          children: floor.flats.map((f) => Container(
+                            width: 12,
+                            height: 12,
+                            margin: const EdgeInsets.all(1),
+                            decoration: BoxDecoration(
+                              color: f.status == FlatStatus.occupied ? Colors.red : Colors.green,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          )).toList(),
+                        ),
+                        const Spacer(),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text('TAP TO EXPLORE & BOOK', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppTheme.primaryColor, letterSpacing: 1)),
+          ],
+        ),
       ),
     );
   }

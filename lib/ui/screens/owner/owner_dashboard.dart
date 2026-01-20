@@ -327,49 +327,116 @@ class _OwnerVisualBuildingMap extends StatelessWidget {
     if (structure == null) return const SizedBox.shrink();
 
     return Container(
-      height: 180,
-      decoration: GlassDecoration.decoration,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: structure.floors.map((floor) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('FL ${floor.floorNumber}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: floor.flats.map((flat) {
-                        bool isOccupied = flat.status == FlatStatus.occupied;
-                        return Container(
-                          width: 28,
-                          height: 28,
-                          margin: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: isOccupied ? Colors.red.withAlpha(51) : Colors.green.withAlpha(51),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: isOccupied ? Colors.red : Colors.green, width: 1),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              isOccupied ? Icons.person : Icons.meeting_room_outlined,
-                              size: 14,
-                              color: isOccupied ? Colors.red : Colors.green,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+      padding: const EdgeInsets.all(20),
+      decoration: GlassDecoration.decoration.copyWith(
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.blue.shade50.withAlpha(127)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _LegendDot(color: Colors.green, label: 'Vacant'),
+              const SizedBox(width: 16),
+              _LegendDot(color: Colors.red, label: 'Occupied'),
+            ],
           ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 140,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: structure.floors.length,
+              itemBuilder: (context, floorIdx) {
+                final floor = structure.floors[floorIdx];
+                return Container(
+                  margin: const EdgeInsets.only(right: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade100),
+                  ),
+                  child: Column(
+                    children: [
+                      Text('FL ${floor.floorNumber}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                      const Spacer(),
+                      // The 'Aeroplane' Grid (2 x N with aisle)
+                      Row(
+                        children: [
+                           // Left Column
+                           Column(
+                             children: floor.flats.take((floor.flats.length / 2).ceil()).map((f) => _UnitSeat(flat: f)).toList(),
+                           ),
+                           // Aisle
+                           Container(
+                             width: 12,
+                             margin: const EdgeInsets.symmetric(horizontal: 4),
+                             height: 60,
+                             decoration: BoxDecoration(
+                               color: Colors.grey.shade50,
+                               borderRadius: BorderRadius.circular(2),
+                             ),
+                           ),
+                           // Right Column
+                           Column(
+                             children: floor.flats.skip((floor.flats.length / 2).ceil()).map((f) => _UnitSeat(flat: f)).toList(),
+                           ),
+                        ],
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  final Color color;
+  final String label;
+  const _LegendDot({required this.color, required this.label});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+      ],
+    );
+  }
+}
+
+class _UnitSeat extends StatelessWidget {
+  final FlatUnit flat;
+  const _UnitSeat({required this.flat});
+
+  @override
+  Widget build(BuildContext context) {
+    final isOccupied = flat.status == FlatStatus.occupied;
+    return Container(
+      width: 24,
+      height: 24,
+      margin: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: isOccupied ? Colors.red.withAlpha(51) : Colors.green.withAlpha(51),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: isOccupied ? Colors.red : Colors.green, width: 1),
+      ),
+      child: Center(
+        child: Text(
+          flat.flatNumber.length > 2 ? flat.flatNumber.substring(flat.flatNumber.length - 2) : flat.flatNumber,
+          style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: isOccupied ? Colors.red : Colors.green),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../data/models/models.dart';
 import '../data/models/visual_booking_models.dart';
@@ -40,8 +41,28 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // 1. Initial Fetch (already implemented)
       await fetchFlats();
       
+      // 2. Setup Real-time Listeners
+      _apartmentsSub = _service.getApartments().listen((apartments) {
+        _apartments = apartments;
+        notifyListeners();
+      });
+
+      // We use collectionGroup to listen to all units across all properties in real-time
+      // Note: This requires a composite index in Firebase if using 'where' filters, 
+      // but a plain collectionGroup snapshot should work for all.
+      _flatsSub = FirebaseFirestore.instance.collectionGroup('units').snapshots().listen((snapshot) {
+        _flats = snapshot.docs.map((doc) => Flat.fromJson({
+          ...doc.data(),
+          'id': doc.id,
+          // If apartmentId is missing in doc data, we might need a way to find it
+          // In the backend createUnit, we store propertyId in the doc, which is the apartmentId
+        })).toList();
+        notifyListeners();
+      });
+
       _tenantsSub = _service.getTenants().listen((tenants) {
         _tenants = tenants;
         notifyListeners();
@@ -49,7 +70,7 @@ class AppProvider extends ChangeNotifier {
 
       _rentSub = _service.getRentRecords().listen((rentRecords) {
         _rentRecords = rentRecords;
-        _applyAutomatedPenalties(); // NEW: Calculate penalties on data refresh
+        _applyAutomatedPenalties();
         notifyListeners();
       });
 
@@ -58,7 +79,6 @@ class AppProvider extends ChangeNotifier {
         notifyListeners();
       });
 
-      // Initialize Real-time services
       await _initializeNotifications();
       
     } catch (e) {

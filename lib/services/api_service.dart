@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import '../data/models/models.dart';
@@ -240,37 +241,43 @@ class ApiService {
     }
   }
 
-  // Identity Verification (Aadhaar KYC)
-  // To use "Real" API, sign up at sandbox.co.in or surepass.io
-  static const String kycApiKey = 'YOUR_REAL_KYC_API_KEY'; 
-  
-  Future<bool> verifyAadhaarReal(String aadhaarNumber) async {
-    const providerUrl = 'https://api.sandbox.co.in/kyc/aadhaar/okyc/otp/request'; // Example Sandbox.co.in endpoint
-    
+  // Identity Verification (Aadhaar KYC) via Secure Backend Bridge
+  Future<String?> initiateAadhaarKyc(String aadhaarNumber) async {
     try {
       final response = await http.post(
-        Uri.parse(providerUrl),
-        headers: {
-          'Authorization': kycApiKey,
-          'Content-Type': 'application/json',
-          'x-api-key': kycApiKey,
-          'x-api-version': '1.0'
-        },
-        body: json.encode({
-          'aadhaar_number': aadhaarNumber,
-        }),
+        Uri.parse('$baseUrl/v2/kyc/aadhaar/initiate'), // Calling our Node.js backend
+        headers: await _getHeaders(),
+        body: json.encode({'aadhaarNumber': aadhaarNumber}),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // Successful API call logic
-        return data['status'] == 'success' || data['code'] == 200;
+        return data['ref_id']; // Return the reference ID for OTP step
       } else {
-        debugPrint('KYC API Error: ${response.body}');
-        return false;
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'KYC Initiation Failed');
       }
     } catch (e) {
-      debugPrint('KYC Connection Error: $e');
+      debugPrint('KYC Error: $e');
+      return null;
+    }
+  }
+
+  Future<bool> verifyAadhaarOtp(String otp, String refId, {String? tenantUid}) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/v2/kyc/aadhaar/verify'), // Calling our Node.js backend
+        headers: await _getHeaders(),
+        body: json.encode({
+          'otp': otp,
+          'ref_id': refId,
+          'tenantUid': tenantUid
+        }),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('KYC OTP Error: $e');
       return false;
     }
   }

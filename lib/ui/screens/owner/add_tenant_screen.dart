@@ -20,11 +20,14 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _aadhaarController = TextEditingController();
+  final _otpController = TextEditingController();
   
   String? _selectedFlatId;
+  String? _refId; // From backend
   File? _passportPhoto;
   File? _aadhaarPhoto;
   bool _isAadhaarVerified = false;
+  bool _otpSent = false;
   bool _isSaving = false;
   int _currentStep = 0;
 
@@ -47,7 +50,7 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
     }
   }
 
-  Future<void> _verifyAadhaar() async {
+  Future<void> _initiateAadhaar() async {
     if (_aadhaarController.text.length != 12) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid 12-digit Aadhaar number')),
@@ -57,9 +60,48 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
 
     setState(() => _isSaving = true);
     
-    // CALLING REAL API SERVICE
     final apiService = ApiService();
-    final bool success = await apiService.verifyAadhaarReal(_aadhaarController.text);
+    final String? refId = await apiService.initiateAadhaarKyc(_aadhaarController.text);
+    
+    setState(() {
+      _isSaving = false;
+      if (refId != null) {
+        _refId = refId;
+        _otpSent = true;
+      }
+    });
+
+    if (mounted) {
+      if (refId != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('OTP sent to your Aadhaar-linked mobile number'),
+            backgroundColor: Colors.blue,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Initiation Failed. Please check the number or Server status.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _verifyOtp() async {
+    if (_otpController.text.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter the 6-digit OTP')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    
+    final apiService = ApiService();
+    final bool success = await apiService.verifyAadhaarOtp(_otpController.text, _refId!);
     
     setState(() {
       _isSaving = false;
@@ -70,14 +112,14 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Aadhaar Verified via Real-time Secure Bridge'),
+            content: Text('Aadhaar Successfully Verified!'),
             backgroundColor: Colors.green,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Verification Failed. Please check the number or API credits.'),
+            content: Text('Invalid OTP. Please try again.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -242,27 +284,56 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
             state: _isAadhaarVerified ? StepState.complete : StepState.indexed,
             content: Column(
               children: [
-                TextFormField(
-                  controller: _aadhaarController,
-                  decoration: InputDecoration(
-                    labelText: '12-Digit Aadhaar Number',
-                    prefixIcon: const Icon(Icons.verified_user),
-                    suffixIcon: _isAadhaarVerified ? const Icon(Icons.check_circle, color: Colors.green) : null,
-                  ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 12,
-                  enabled: !_isAadhaarVerified,
-                ),
-                const SizedBox(height: 16),
-                if (!_isAadhaarVerified)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _isSaving ? null : _verifyAadhaar,
-                      icon: const Icon(Icons.security),
-                      label: Text(_isSaving ? 'Verifying with UIDAI...' : 'Verify via OTP / Biometric'),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.secondaryColor),
+                if (!_isAadhaarVerified) ...[
+                  TextFormField(
+                    controller: _aadhaarController,
+                    decoration: const InputDecoration(
+                      labelText: '12-Digit Aadhaar Number',
+                      prefixIcon: Icon(Icons.verified_user),
                     ),
+                    keyboardType: TextInputType.number,
+                    maxLength: 12,
+                    enabled: !_otpSent,
+                  ),
+                  const SizedBox(height: 16),
+                  if (_otpSent) ...[
+                    TextFormField(
+                      controller: _otpController,
+                      decoration: const InputDecoration(
+                        labelText: 'Enter 6-Digit OTP',
+                        prefixIcon: Icon(Icons.lock_clock),
+                        hintText: 'Check Aadhaar-linked phone',
+                      ),
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isSaving ? null : _verifyOtp,
+                        icon: const Icon(Icons.check_circle),
+                        label: Text(_isSaving ? 'Verifying OTP...' : 'Verify OTP'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      ),
+                    ),
+                  ] else
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isSaving ? null : _initiateAadhaar,
+                        icon: const Icon(Icons.security),
+                        label: Text(_isSaving ? 'Connecting to UIDAI...' : 'Request Verification OTP'),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.secondaryColor),
+                      ),
+                    ),
+                ] else
+                  const Column(
+                    children: [
+                      Icon(Icons.verified, color: Colors.green, size: 64),
+                      SizedBox(height: 8),
+                      Text('Aadhaar Identity Verified Successfully', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                    ],
                   ),
                 const SizedBox(height: 20),
                 const Text('Note: Data is encrypted and authenticated via UIDAI secure protocols.', style: TextStyle(fontSize: 10, color: Colors.grey)),

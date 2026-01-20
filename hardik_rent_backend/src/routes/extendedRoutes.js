@@ -24,6 +24,8 @@ router.post('/handovers', verifyToken, handoverController.createHandover);
 router.get('/handovers/unit/:unitId', verifyToken, handoverController.getUnitHistory);
 
 // KYC
+router.post('/kyc/aadhaar/initiate', verifyToken, kycController.initiateAadhaarOtp);
+router.post('/kyc/aadhaar/verify', verifyToken, kycController.verifyAadhaarOtp);
 router.post('/kyc/submit', verifyToken, kycController.submitKyc);
 router.post('/kyc/verify', verifyToken, kycController.verifyKyc);
 
