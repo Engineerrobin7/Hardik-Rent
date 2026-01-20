@@ -54,14 +54,14 @@ class ApiService {
     }
   }
 
-  Future<void> updateUnitStatus(String unitId, String status, {String? tenantId}) async {
+  Future<void> updateUnitStatus(String propertyId, String unitId, String status) async {
     final response = await http.patch(
       Uri.parse('$baseUrl/properties/unit-status'),
       headers: await _getHeaders(),
       body: json.encode({
+        'propertyId': propertyId,
         'unitId': unitId,
         'status': status,
-        'tenantId': tenantId,
       }),
     );
     if (response.statusCode != 200) {
@@ -69,33 +69,41 @@ class ApiService {
     }
   }
 
-  Future<String> createTenantUser(User tenant) async {
+  Future<String> createTenantUser({
+    required String name,
+    required String email,
+    required String phone,
+    String? propertyId,
+    String? unitId,
+  }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/create-tenant'),
       headers: await _getHeaders(),
       body: json.encode({
-        'name': tenant.name,
-        'email': tenant.email,
-        'phone': tenant.phoneNumber ?? '',
-        'role': 'tenant'
+        'displayName': name,
+        'email': email,
+        'phoneNumber': phone,
+        'propertyId': propertyId,
+        'unitId': unitId,
       }),
     );
 
     if (response.statusCode == 201) {
       final data = json.decode(response.body);
-      return data['id'];
+      return data['uid'];
     } else {
        throw Exception('Failed to create tenant: ${response.body}');
     }
   }
 
-  Future<void> toggleElectricity(String unitId, bool isActive) async {
+  Future<void> toggleElectricity(String propertyId, String unitId, bool enabled) async {
     final response = await http.patch(
       Uri.parse('$baseUrl/properties/toggle-electricity'),
       headers: await _getHeaders(),
       body: json.encode({
+        'propertyId': propertyId,
         'unitId': unitId,
-        'isActive': isActive,
+        'enabled': enabled,
       }),
     );
     if (response.statusCode != 200) {
@@ -194,9 +202,9 @@ class ApiService {
       headers: await _getHeaders(),
       body: json.encode({
         'email': email,
-        'name': name,
+        'displayName': name,
         'role': role,
-        'phone': phone,
+        'phoneNumber': phone ?? '',
       }),
     );
     if (response.statusCode != 200 && response.statusCode != 201) {

@@ -146,7 +146,7 @@ class _FlatCard extends StatelessWidget {
                       value: flat.isElectricityActive,
                       activeThumbColor: Colors.amber,
                       onChanged: (val) {
-                         Provider.of<AppProvider>(context, listen: false).toggleElectricity(flat.id, val);
+                         Provider.of<AppProvider>(context, listen: false).toggleElectricity(flat.apartmentId, flat.id, val);
                       },
                     ),
                   ],

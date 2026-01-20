@@ -151,6 +151,7 @@ class _AddEditFlatScreenState extends State<AddEditFlatScreen> {
                 await Provider.of<AppProvider>(context, listen: false).addProperty(
                   nameController.text,
                   addressController.text,
+                  'Residential',
                 );
                 navigator.pop();
               }

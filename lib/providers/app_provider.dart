@@ -83,9 +83,9 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  Future<void> toggleElectricity(String flatId, bool isActive) async {
+  Future<void> toggleElectricity(String propertyId, String flatId, bool enabled) async {
     try {
-      await _apiService.toggleElectricity(flatId, isActive);
+      await _apiService.toggleElectricity(propertyId, flatId, enabled);
       // Optimistic Update
       final index = _flats.indexWhere((f) => f.id == flatId);
       if (index != -1) {
@@ -98,7 +98,7 @@ class AppProvider with ChangeNotifier {
           monthlyRent: old.monthlyRent,
           isOccupied: old.isOccupied,
           currentTenantId: old.currentTenantId,
-          isElectricityActive: isActive,
+          isElectricityActive: enabled,
         );
         notifyListeners();
       }
@@ -107,7 +107,6 @@ class AppProvider with ChangeNotifier {
       rethrow;
     }
   }
-
 
 
   @override
@@ -121,9 +120,13 @@ class AppProvider with ChangeNotifier {
   }
 
   // Apartment Methods
-  Future<void> addProperty(String name, String address) async {
+  Future<void> addProperty(String name, String address, String type) async {
     try {
-      await _apiService.createProperty({'name': name, 'address': address});
+      await _apiService.createProperty({
+        'name': name,
+        'address': address,
+        'type': type,
+      });
       await fetchFlats(); // Refresh data
     } catch (e) {
       debugPrint('Error creating property: $e');
@@ -139,10 +142,11 @@ class AppProvider with ChangeNotifier {
   Future<void> addFlat(Flat flat) async {
      try {
        await _apiService.createUnit({
-         'propertyId': flat.apartmentId, // Using apartmentId as propertyId
+         'propertyId': flat.apartmentId,
          'unitNumber': flat.flatNumber,
-         'floorNumber': flat.floor,
-         'rentAmount': flat.monthlyRent
+         'floor': flat.floor,
+         'rent': flat.monthlyRent,
+         'type': 'Standard', // Default type
        });
        await fetchFlats();
      } catch (e) {
@@ -155,19 +159,21 @@ class AppProvider with ChangeNotifier {
   }
 
   // Tenant Methods
-  Future<void> addTenant(User tenant, String flatId) async {
+  Future<void> addTenant({
+    required User tenant,
+    required String propertyId,
+    required String unitId,
+  }) async {
     try {
-      // 1. Create Tenant User in Backend
-      // We'll use a new method for this
-      final createdTenantId = await _apiService.createTenantUser(tenant);
-
-      // 2. Assign to Unit
-      await _apiService.updateUnitStatus(
-        flatId, 
-        'occupied',
-        tenantId: createdTenantId
+      // 1. Create and Assign Tenant in one Go via Backend
+      await _apiService.createTenantUser(
+        name: tenant.name,
+        email: tenant.email,
+        phone: tenant.phoneNumber ?? '',
+        propertyId: propertyId,
+        unitId: unitId,
       );
-      
+
       // Refresh local data
       await fetchFlats();
       

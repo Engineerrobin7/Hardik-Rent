@@ -32,7 +32,13 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
       phoneNumber: _phoneController.text,
     );
 
-    app.addTenant(newTenant, _selectedFlatId!);
+    final selectedFlat = app.flats.firstWhere((f) => f.id == _selectedFlatId);
+    
+    app.addTenant(
+      tenant: newTenant,
+      propertyId: selectedFlat.apartmentId,
+      unitId: _selectedFlatId!,
+    );
     Navigator.pop(context);
   }
 
