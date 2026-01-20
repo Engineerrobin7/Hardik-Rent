@@ -16,30 +16,42 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
   final _phoneController = TextEditingController();
   String? _selectedFlatId;
 
-  void _saveTenant() {
+  bool _isSaving = false;
+
+  Future<void> _saveTenant() async {
     if (_nameController.text.isEmpty || _emailController.text.isEmpty || _selectedFlatId == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all required fields')));
       return;
     }
 
+    setState(() => _isSaving = true);
     final app = Provider.of<AppProvider>(context, listen: false);
     
-    final newTenant = User(
-      id: 'tenant_${DateTime.now().millisecondsSinceEpoch}',
-      name: _nameController.text,
-      email: _emailController.text,
-      role: UserRole.tenant,
-      phoneNumber: _phoneController.text,
-    );
+    try {
+      final newTenant = User(
+        id: 'tenant_${DateTime.now().millisecondsSinceEpoch}',
+        name: _nameController.text,
+        email: _emailController.text,
+        role: UserRole.tenant,
+        phoneNumber: _phoneController.text,
+      );
 
-    final selectedFlat = app.flats.firstWhere((f) => f.id == _selectedFlatId);
-    
-    app.addTenant(
-      tenant: newTenant,
-      propertyId: selectedFlat.apartmentId,
-      unitId: _selectedFlatId!,
-    );
-    Navigator.pop(context);
+      final selectedFlat = app.flats.firstWhere((f) => f.id == _selectedFlatId);
+      
+      await app.addTenant(
+        tenant: newTenant,
+        propertyId: selectedFlat.apartmentId,
+        unitId: _selectedFlatId!,
+      );
+      
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -85,9 +97,15 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
               hint: const Text('Select an empty flat'),
             ),
             const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: _saveTenant,
-              child: const Text('Add Tenant'),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _saveTenant,
+                child: _isSaving 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
+                  : const Text('Add Tenant'),
+              ),
             ),
           ],
         ),

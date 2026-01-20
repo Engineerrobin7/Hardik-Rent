@@ -243,10 +243,18 @@ class _TenantDashboardState extends State<TenantDashboard> with TickerProviderSt
           const SizedBox(height: 8),
           Text('Explore available flats in different buildings.', style: TextStyle(color: Colors.grey.shade600)),
           const SizedBox(height: 20),
-          const SizedBox(height: 20),
-          _buildBuildingTile(context, 'Sunrise Apartments', '1'),
-          const Divider(height: 10),
-          _buildBuildingTile(context, 'Greenwood Complex', '2'),
+          if (app.isDataLoading)
+            const LinearProgressIndicator(minHeight: 2),
+          const SizedBox(height: 10),
+          if (app.apartments.isEmpty)
+            const Center(child: Text('No buildings available.'))
+          else
+            ...app.apartments.map((apt) => Column(
+              children: [
+                _buildBuildingTile(context, apt.name, apt.id),
+                const Divider(height: 10),
+              ],
+            )),
           const SizedBox(height: 24),
           
           // New Visual Booking Button

@@ -1,28 +1,62 @@
-// Sprint 5: Visual Booking Screen
-// File: lib/ui/screens/tenant/visual_booking_screen.dart
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../data/models/visual_booking_models.dart';
+import '../../../providers/app_provider.dart';
 import 'booking_form_screen.dart';
 
 class VisualBookingScreen extends StatefulWidget {
-  const VisualBookingScreen({Key? key}) : super(key: key);
+  final String? apartmentId;
+  const VisualBookingScreen({Key? key, this.apartmentId}) : super(key: key);
 
   @override
   State<VisualBookingScreen> createState() => _VisualBookingScreenState();
 }
 
 class _VisualBookingScreenState extends State<VisualBookingScreen> {
-  // Using dummy data for layout demonstration
-  final BuildingStructure _building = BuildingStructure.generateDummyData();
+  BuildingStructure? _building;
   FlatUnit? _selectedFlat;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBuildingData();
+  }
+
+  void _loadBuildingData() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final app = Provider.of<AppProvider>(context, listen: false);
+      // If apartmentId is null, pick the first one available
+      final id = widget.apartmentId ?? (app.apartments.isNotEmpty ? app.apartments.first.id : null);
+      
+      if (id != null) {
+        setState(() {
+          _building = app.getBuildingStructure(id);
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_building == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Building View')),
+        body: const Center(child: Text('Building data not found. Please add flats first.')),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text(_building.name),
+        title: Text(_building!.name),
         backgroundColor: Colors.blue[900], // Premium color
         foregroundColor: Colors.white,
         elevation: 0,
@@ -133,23 +167,18 @@ class _VisualBookingScreenState extends State<VisualBookingScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Left Wing
-                  _buildFlatItem(floor.flats[0]),
-                  const SizedBox(width: 12),
-                  _buildFlatItem(floor.flats[1]),
-
-                  // Corridor Space
-                  Container(
-                    width: 40, 
-                    height: 50,
-                    alignment: Alignment.center,
-                    child: Icon(Icons.elevator, size: 16, color: Colors.grey[300]),
-                  ),
-
-                  // Right Wing
-                  _buildFlatItem(floor.flats[2]),
-                  const SizedBox(width: 12),
-                  _buildFlatItem(floor.flats[3]),
+                  for (int i = 0; i < floor.flats.length; i++) ...[
+                    // Add corridor in the middle
+                    if (i == (floor.flats.length / 2).floor() && floor.flats.length > 1) 
+                      Container(
+                        width: 40, 
+                        height: 50,
+                        alignment: Alignment.center,
+                        child: Icon(Icons.elevator, size: 16, color: Colors.grey[300]),
+                      ),
+                    _buildFlatItem(floor.flats[i]),
+                    if (i < floor.flats.length - 1) const SizedBox(width: 12),
+                  ],
                 ],
               ),
             ),

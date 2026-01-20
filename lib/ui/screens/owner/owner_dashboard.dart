@@ -68,157 +68,174 @@ class _OwnerDashboardState extends State<OwnerDashboard> with SingleTickerProvid
     double pendingRent = (_analyticsData?['pendingRent'] ?? 0).toDouble();
     String occupancyRate = _analyticsData?['occupancyRate']?.toString() ?? "0";
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final childAspectRatio = screenWidth > 400 ? 1.2 : 1.1;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background Gradient Decor
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.primaryColor.withAlpha(25),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _fetchStats();
+          await app.fetchFlats();
+        },
+        child: Stack(
+          children: [
+            // Background Gradient Decor
+            Positioned(
+              top: -100,
+              right: -100,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.primaryColor.withAlpha(25),
+                ),
               ),
             ),
-          ),
-          SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Good Morning,',
-                                style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+            SafeArea(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    if (app.isDataLoading)
+                      const SliverToBoxAdapter(
+                        child: LinearProgressIndicator(minHeight: 2),
+                      ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Good Morning,',
+                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                                  ),
+                                  Text(
+                                    auth.currentUser?.name ?? "Landlord",
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -0.5,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              Text(
-                                auth.currentUser?.name ?? "Landlord",
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen())),
-                            child: Hero(
-                              tag: 'profile_pic',
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: AppTheme.primaryColor, width: 2),
-                                ),
-                                child: const CircleAvatar(
-                                  radius: 24,
-                                  backgroundColor: AppTheme.primaryColor,
-                                  child: Icon(Icons.person, color: Colors.white),
+                            ),
+                            const SizedBox(width: 16),
+                            GestureDetector(
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen())),
+                              child: Hero(
+                                tag: 'profile_pic',
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppTheme.primaryColor, width: 2),
+                                  ),
+                                  child: const CircleAvatar(
+                                    radius: 24,
+                                    backgroundColor: AppTheme.primaryColor,
+                                    child: Icon(Icons.person, color: Colors.white),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: _buildMainStatCard(totalCollection),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                    sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.1,
-                      ),
-                      delegate: SliverChildListDelegate([
-                        _StatMiniCard(
-                          title: 'Total Flats',
-                          value: totalFlats.toString(),
-                          icon: Icons.apartment_rounded,
-                          gradient: const [Color(0xFF6366F1), Color(0xFF818CF8)],
-                        ),
-                        _StatMiniCard(
-                          title: 'Occupied',
-                          value: occupiedFlats.toString(),
-                          icon: Icons.person_pin_rounded,
-                          gradient: const [Color(0xFF10B981), Color(0xFF34D399)],
-                        ),
-                        _StatMiniCard(
-                          title: 'Occupancy',
-                          value: '$occupancyRate%',
-                          icon: Icons.pie_chart_rounded,
-                          gradient: const [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
-                        ),
-                        _StatMiniCard(
-                          title: 'Pending Rent',
-                          value: '₹${pendingRent.toInt()}',
-                          icon: Icons.hourglass_empty_rounded,
-                          gradient: const [Color(0xFFEF4444), Color(0xFFF87171)],
-                        ),
-                      ]),
+                    SliverToBoxAdapter(
+                      child: _buildMainStatCard(totalCollection),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Quick Actions',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: screenWidth > 600 ? 3 : 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: childAspectRatio,
+                        ),
+                        delegate: SliverChildListDelegate([
+                          _StatMiniCard(
+                            title: 'Total Flats',
+                            value: totalFlats.toString(),
+                            icon: Icons.apartment_rounded,
+                            gradient: const [Color(0xFF6366F1), Color(0xFF818CF8)],
                           ),
-                          const SizedBox(height: 16),
-                          _InteractiveActionTile(
-                            title: 'Manage Flats',
-                            subtitle: 'Add or modify properties',
-                            icon: Icons.domain_add_rounded,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FlatListScreen())),
+                          _StatMiniCard(
+                            title: 'Occupied',
+                            value: occupiedFlats.toString(),
+                            icon: Icons.person_pin_rounded,
+                            gradient: const [Color(0xFF10B981), Color(0xFF34D399)],
                           ),
-                          _InteractiveActionTile(
-                            title: 'Tenant Directory',
-                            subtitle: 'Active member profiles',
-                            icon: Icons.badge_rounded,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TenantListScreen())),
+                          _StatMiniCard(
+                            title: 'Occupancy',
+                            value: '$occupancyRate%',
+                            icon: Icons.pie_chart_rounded,
+                            gradient: const [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
                           ),
-                          _InteractiveActionTile(
-                            title: 'Payment Approvals',
-                            subtitle: 'Verify transactions',
-                            icon: Icons.verified_rounded,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentApprovalScreen())),
+                          _StatMiniCard(
+                            title: 'Pending Rent',
+                            value: '₹${pendingRent.toInt()}',
+                            icon: Icons.hourglass_empty_rounded,
+                            gradient: const [Color(0xFFEF4444), Color(0xFFF87171)],
                           ),
-                          _InteractiveActionTile(
-                            title: 'Collection History',
-                            subtitle: 'Detailed revenue logs',
-                            icon: Icons.history_edu_rounded,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RentRecordsScreen())),
-                          ),
-                        ],
+                        ]),
                       ),
                     ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                ],
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Quick Actions',
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(height: 16),
+                            _InteractiveActionTile(
+                              title: 'Manage Flats',
+                              subtitle: 'Add or modify properties',
+                              icon: Icons.domain_add_rounded,
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const FlatListScreen())),
+                            ),
+                            _InteractiveActionTile(
+                              title: 'Tenant Directory',
+                              subtitle: 'Active member profiles',
+                              icon: Icons.badge_rounded,
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TenantListScreen())),
+                            ),
+                            _InteractiveActionTile(
+                              title: 'Payment Approvals',
+                              subtitle: 'Verify transactions',
+                              icon: Icons.verified_rounded,
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentApprovalScreen())),
+                            ),
+                            _InteractiveActionTile(
+                              title: 'Collection History',
+                              subtitle: 'Detailed revenue logs',
+                              icon: Icons.history_edu_rounded,
+                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RentRecordsScreen())),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -14,20 +14,36 @@ class FlatListScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Global Flat Inventory'),
+        title: const Text('Flat Inventory'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => app.fetchFlats(),
+          ),
+        ],
       ),
-      body: app.flats.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              itemCount: app.flats.length,
-              itemBuilder: (context, index) {
-                final flat = app.flats[index];
-                final apartment = app.apartments.firstWhere((a) => a.id == flat.apartmentId, orElse: () => Apartment(id: '', name: 'Unknown', address: '', ownerId: ''));
-
-                return _FlatCard(flat: flat, apartmentName: apartment.name);
-              },
-            ),
+      body: Column(
+        children: [
+          if (app.isDataLoading)
+            const LinearProgressIndicator(minHeight: 2),
+          Expanded(
+            child: app.flats.isEmpty
+                ? _buildEmptyState()
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    itemCount: app.flats.length,
+                    itemBuilder: (context, index) {
+                      final flat = app.flats[index];
+                      final apartment = app.apartments.firstWhere(
+                        (a) => a.id == flat.apartmentId,
+                        orElse: () => Apartment(id: '', name: 'Standard Property', address: '', ownerId: ''),
+                      );
+                      return _FlatCard(flat: flat, apartmentName: apartment.name);
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEditFlatScreen())),
         backgroundColor: AppTheme.primaryColor,
@@ -84,13 +100,24 @@ class _FlatCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('FLAT ${flat.flatNumber}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, letterSpacing: -0.5)),
-                      Text(apartmentName, style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w600)),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'FLAT ${flat.flatNumber}',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, letterSpacing: -0.5),
+                        ),
+                        Text(
+                          apartmentName,
+                          style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(

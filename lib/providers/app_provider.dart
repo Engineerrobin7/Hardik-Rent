@@ -4,80 +4,68 @@ import '../data/models/models.dart';
 import '../services/api_service.dart';
 import '../services/firebase_service.dart';
 
-class AppProvider with ChangeNotifier {
-  final FirebaseService _service = FirebaseService();
-  final ApiService _apiService = ApiService();
-  List<Apartment> _apartments = [];
-  List<Flat> _flats = [];
-  List<User> _tenants = [];
-  List<RentRecord> _rentRecords = [];
-  List<PaymentRecord> _payments = [];
+  bool _isDataLoading = false;
+  bool get isDataLoading => _isDataLoading;
 
-  StreamSubscription? _flatsSub;
-  StreamSubscription? _tenantsSub;
-  StreamSubscription? _rentSub;
-  StreamSubscription? _paymentSub;
-  StreamSubscription? _apartmentsSub;
+  AppProvider() {
+    _initializeData();
+  }
 
-  List<Apartment> get apartments => _apartments;
-  List<Flat> get flats => _flats;
-  List<User> get tenants => _tenants;
-  List<RentRecord> get rentRecords => _rentRecords;
-  List<PaymentRecord> get payments => _payments;
+  Future<void> _initializeData() async {
+    _isDataLoading = true;
+    notifyListeners();
 
-    AppProvider() {
-
-      fetchFlats();
-
-      _flatsSub = _service.getFlats().listen((flats) {
-
-        _flats = flats;
-
-        notifyListeners();
-
-      });
-
+    try {
+      await fetchFlats();
+      
       _tenantsSub = _service.getTenants().listen((tenants) {
-
         _tenants = tenants;
-
         notifyListeners();
-
       });
 
       _rentSub = _service.getRentRecords().listen((rentRecords) {
-
         _rentRecords = rentRecords;
-
         notifyListeners();
-
       });
 
-          _paymentSub = _service.getPayments().listen((payments) {
-
-            _payments = payments;
-
-            notifyListeners();
-
-          });
-
-          _apartmentsSub = _service.getApartments().listen((apartments) {
-
-            _apartments = apartments;
-
-            notifyListeners();
-
-          });
-
-        }
+      _paymentSub = _service.getPayments().listen((payments) {
+        _payments = payments;
+        notifyListeners();
+      });
+    } catch (e) {
+      debugPrint('Initialization Error: $e');
+    } finally {
+      _isDataLoading = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> fetchFlats() async {
     try {
-      final properties = await _apiService.getProperties();
-      // Assuming getProperties returns a list of maps, and you have a way to convert them to Apartment and Flat objects
-      // This part is complex and depends on your data structure.
-      // For now, let's just print them.
-      debugPrint(properties.toString());
+      final List<dynamic> propertiesData = await _apiService.getProperties();
+      
+      List<Apartment> apartments = [];
+      List<Flat> allFlats = [];
+
+      for (var prop in propertiesData) {
+        final apt = Apartment.fromJson(prop);
+        apartments.add(apt);
+        
+        // Fetch units for each property if the backend provides them in the same call or requires another
+        // Assuming the backend returns units within the property data for performance
+        if (prop['units'] != null) {
+          for (var unitData in prop['units']) {
+            allFlats.add(Flat.fromJson({
+              ...unitData,
+              'apartmentId': apt.id,
+            }));
+          }
+        }
+      }
+
+      _apartments = apartments;
+      _flats = allFlats;
+      notifyListeners();
     } catch (e) {
       debugPrint('Error fetching flats: $e');
     }
@@ -249,5 +237,36 @@ class AppProvider with ChangeNotifier {
 
   Future<void> rejectPayment(String paymentId) async {
     await _service.updatePaymentStatus(paymentId, PaymentStatus.rejected);
+  }
+  BuildingStructure? getBuildingStructure(String apartmentId) {
+    if (_apartments.isEmpty) return null;
+    final aptIndex = _apartments.indexWhere((a) => a.id == apartmentId);
+    if (aptIndex == -1) return null;
+    final apt = _apartments[aptIndex];
+
+    final aptFlats = _flats.where((f) => f.apartmentId == apartmentId).toList();
+    
+    // Group by floor
+    final Map<int, List<FlatUnit>> floorMap = {};
+    for (var flat in aptFlats) {
+      final flatUnit = FlatUnit(
+        id: flat.id,
+        flatNumber: flat.flatNumber,
+        bhk: 2, // Default or parse from some field if available
+        rentAmount: flat.monthlyRent,
+        status: flat.isOccupied ? FlatStatus.occupied : FlatStatus.available,
+      );
+      floorMap.putIfAbsent(flat.floor, () => []).add(flatUnit);
+    }
+
+    final floors = floorMap.entries.map((e) {
+       final sortedFlats = e.value;
+       sortedFlats.sort((a, b) => a.flatNumber.compareTo(b.flatNumber));
+       return Floor(floorNumber: e.key, flats: sortedFlats);
+    }).toList();
+    
+    floors.sort((a, b) => a.floorNumber.compareTo(b.floorNumber));
+
+    return BuildingStructure(name: apt.name, floors: floors);
   }
 }

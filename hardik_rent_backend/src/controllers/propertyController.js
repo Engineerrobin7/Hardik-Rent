@@ -45,7 +45,13 @@ exports.getOwnerProperties = async (req, res) => {
             return res.status(200).json([]);
         }
 
-        const properties = propertiesSnapshot.docs.map(doc => doc.data());
+        const properties = [];
+        for (const doc of propertiesSnapshot.docs) {
+            const property = doc.data();
+            const unitsSnapshot = await db.collection('properties').doc(doc.id).collection('units').get();
+            property.units = unitsSnapshot.docs.map(unitDoc => unitDoc.data());
+            properties.push(property);
+        }
 
         res.status(200).json(properties);
     } catch (error) {
@@ -57,7 +63,7 @@ exports.getOwnerProperties = async (req, res) => {
 exports.createUnit = async (req, res) => {
     try {
         const { propertyId, unitNumber, rent, type } = req.body;
-         if (!propertyId || !unitNumber || !rent || !type) {
+        if (!propertyId || !unitNumber || !rent || !type) {
             return res.status(400).json({ error: 'Missing required fields: propertyId, unitNumber, rent, type' });
         }
         const unitId = uuidv4();
